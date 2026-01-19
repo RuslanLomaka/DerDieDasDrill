@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Slot Deutsch - Unified Motion</title>
+    <title>Slot Deutsch - Ultimate Edition</title>
     <style>
         :root {
             --bg: #0b1020;
@@ -12,10 +12,11 @@
             --text: #e7ecff;
             --ok: #36c689;
             --bad: #ff6470;
-            --der: #4b8bff;
-            --die: #ff6cae;
-            --das: #ffd84b;
+            --der: #4b8bff;   /* Blue */
+            --die: #ff6cae;   /* Pink */
+            --das: #ffd84b;   /* Yellow */
             --border: #24335c;
+            --accent: #a3a9ff;
         }
 
         * { box-sizing: border-box; }
@@ -28,9 +29,19 @@
         }
 
         header { width: 100%; max-width: 900px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .controls-top { display: flex; gap: 10px; align-items: center; }
+        
+        .level-select {
+            background: #1a2340; border: 1px solid var(--border); color: var(--accent);
+            padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: bold;
+            cursor: pointer; outline: none;
+        }
+
         .pill { background: #1a2340; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; }
         
         main { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 20px; }
+        @media (max-width: 800px) { main { grid-template-columns: 1fr; overflow-y: auto; } }
 
         .stage {
             position: relative;
@@ -67,27 +78,15 @@
 
         .slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(1.5px) brightness(0.5); opacity: 0.5; }
         .slot-unit.pos-active { transform: translateY(190px) scale(1); filter: blur(0) brightness(1); opacity: 1; font-size: 52px; }
-        /* Keep pos-prev large and clear enough to see the result */
         .slot-unit.pos-prev { transform: translateY(360px) scale(0.95); filter: blur(1.5px) brightness(0.7); opacity: 0.7; font-size: 40px; }
         .slot-unit.pos-exit { transform: translateY(550px) scale(0.8); opacity: 0; filter: blur(4px); }
 
         .article-reveal {
-            opacity: 0;
-            max-width: 0;
-            display: inline-block;
-            overflow: hidden;
-            transition: opacity 0.3s ease, max-width 0.4s ease;
-            white-space: nowrap;
-            margin-right: 0;
-            font-size: inherit;
+            opacity: 0; max-width: 0; display: inline-block; overflow: hidden;
+            transition: opacity 0.3s ease, max-width 0.4s ease; white-space: nowrap; margin-right: 0; font-size: inherit;
         }
 
-        /* Logic: once resolved, the article stays open permanently in all states */
-        .resolved .article-reveal { 
-            opacity: 1; 
-            max-width: 200px; /* Large enough for 'einen' etc */
-            margin-right: 15px;
-        }
+        .resolved .article-reveal { opacity: 1; max-width: 250px; margin-right: 15px; }
 
         .controls-area { margin-top: 30px; text-align: center; }
         .btnrow { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
@@ -109,10 +108,19 @@
 
 <header>
     <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
-    <button class="pill" onclick="location.reload()">Reset All</button>
+    <div class="controls-top">
+        <select class="level-select" id="levelSelector">
+            <option value="A1">Level A1 (Basic)</option>
+            <option value="A2">Level A2 (Daily)</option>
+            <option value="B1">Level B1 (Interm.)</option>
+            <option value="B2">Level B2 (Pro)</option>
+            <option value="ALL">Mix All</option>
+        </select>
+        <button class="pill" onclick="location.reload()">Reset</button>
+    </div>
 </header>
 
-<main style="width:100%; max-width:900px; display:grid; grid-template-columns: 1fr 320px; gap:24px; padding:20px;">
+<main>
     <section>
         <div class="stage">
             <div id="reel" class="reel-container"></div>
@@ -128,46 +136,116 @@
 
     <aside>
         <div class="stat-box">
-            <div class="stat-label">Correct / Wrong</div>
+            <div class="stat-label">Richtig / Falsch</div>
             <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
         </div>
         <div class="stat-box">
             <div class="stat-label">Streak</div>
             <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
         </div>
+        <div class="stat-box" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
+            <b style="color:var(--text)">Vokabeln im Deck:</b><br>
+            <span id="levelCount">0</span> Wörter geladen.
+        </div>
     </aside>
 </main>
 
 <script>
-const wordData = [
-    {word:"Adresse", article:"die"}, {word:"Angst", article:"die"}, {word:"Anzug", article:"der"},
-    {word:"Apfel", article:"der"}, {word:"Arbeit", article:"die"}, {word:"Arzt", article:"der"},
-    {word:"Auto", article:"das"}, {word:"Auge", article:"das"}, {word:"Bahnhof", article:"der"},
-    {word:"Bett", article:"das"}, {word:"Bild", article:"das"}, {word:"Blume", article:"die"},
-    {word:"Brot", article:"das"}, {word:"Bus", article:"der"}, {word:"Computer", article:"der"},
-    {word:"Dorf", article:"das"}, {word:"Diskussion", article:"die"}, {word:"Erfolg", article:"der"},
-    {word:"Familie", article:"die"}, {word:"Fenster", article:"das"}, {word:"Film", article:"der"},
-    {word:"Firma", article:"die"}, {word:"Flugzeug", article:"das"}, {word:"Frage", article:"die"},
-    {word:"Garten", article:"der"}, {word:"Geschenk", article:"das"}, {word:"Handy", article:"das"},
-    {word:"Haus", article:"das"}, {word:"Idee", article:"die"}, {word:"Jahr", article:"das"},
-    {word:"Kaffee", article:"der"}, {word:"Kind", article:"das"}, {word:"Kleidung", article:"die"},
-    {word:"Lösung", article:"die"}, {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"},
-    {word:"Nachricht", article:"die"}, {word:"Obst", article:"das"}, {word:"Problem", article:"das"},
-    {word:"Schlüssel", article:"der"}, {word:"Stadt", article:"die"}, {word:"Universität", article:"die"}
+const rawData = [
+    // --- LEVEL A1 (Basic Objects, Body, Family, Food) ---
+    {w:"Apfel", a:"der", l:"A1"}, {w:"Auto", a:"das", l:"A1"}, {w:"Brot", a:"das", l:"A1"}, 
+    {w:"Kind", a:"das", l:"A1"}, {w:"Mann", a:"der", l:"A1"}, {w:"Frau", a:"die", l:"A1"}, 
+    {w:"Haus", a:"das", l:"A1"}, {w:"Schule", a:"die", l:"A1"}, {w:"Tisch", a:"der", l:"A1"}, 
+    {w:"Wasser", a:"das", l:"A1"}, {w:"Name", a:"der", l:"A1"}, {w:"Tag", a:"der", l:"A1"}, 
+    {w:"Nacht", a:"die", l:"A1"}, {w:"Stadt", a:"die", l:"A1"}, {w:"Land", a:"das", l:"A1"},
+    {w:"Buch", a:"das", l:"A1"}, {w:"Stift", a:"der", l:"A1"}, {w:"Stuhl", a:"der", l:"A1"},
+    {w:"Fenster", a:"das", l:"A1"}, {w:"Tür", a:"die", l:"A1"}, {w:"Hand", a:"die", l:"A1"},
+    {w:"Fuß", a:"der", l:"A1"}, {w:"Kopf", a:"der", l:"A1"}, {w:"Auge", a:"das", l:"A1"},
+    {w:"Mund", a:"der", l:"A1"}, {w:"Nase", a:"die", l:"A1"}, {w:"Ohr", a:"das", l:"A1"},
+    {w:"Vater", a:"der", l:"A1"}, {w:"Mutter", a:"die", l:"A1"}, {w:"Bruder", a:"der", l:"A1"},
+    {w:"Schwester", a:"die", l:"A1"}, {w:"Freund", a:"der", l:"A1"}, {w:"Freundin", a:"die", l:"A1"},
+    {w:"Milch", a:"die", l:"A1"}, {w:"Käse", a:"der", l:"A1"}, {w:"Ei", a:"das", l:"A1"},
+    {w:"Geld", a:"das", l:"A1"}, {w:"Bus", a:"der", l:"A1"}, {w:"Zug", a:"der", l:"A1"},
+    {w:"Bett", a:"das", l:"A1"}, {w:"Zimmer", a:"das", l:"A1"}, {w:"Woche", a:"die", l:"A1"},
+    {w:"Jahr", a:"das", l:"A1"}, {w:"Uhr", a:"die", l:"A1"}, {w:"Tasche", a:"die", l:"A1"},
+
+    // --- LEVEL A2 (Travel, Work, Shopping, Nature, Housing) ---
+    {w:"Bahnhof", a:"der", l:"A2"}, {w:"Beruf", a:"der", l:"A2"}, {w:"Essen", a:"das", l:"A2"}, 
+    {w:"Frage", a:"die", l:"A2"}, {w:"Hilfe", a:"die", l:"A2"}, {w:"Kleidung", a:"die", l:"A2"}, 
+    {w:"Reise", a:"die", l:"A2"}, {w:"Urlaub", a:"der", l:"A2"}, {w:"Zeitung", a:"die", l:"A2"}, 
+    {w:"Arbeit", a:"die", l:"A2"}, {w:"Fahrrad", a:"das", l:"A2"}, {w:"Kaffee", a:"der", l:"A2"}, 
+    {w:"Küche", a:"die", l:"A2"}, {w:"Pass", a:"der", l:"A2"}, {w:"Koffer", a:"der", l:"A2"},
+    {w:"Flug", a:"der", l:"A2"}, {w:"Ticket", a:"das", l:"A2"}, {w:"Hotel", a:"das", l:"A2"},
+    {w:"Chef", a:"der", l:"A2"}, {w:"Kollege", a:"der", l:"A2"}, {w:"Firma", a:"die", l:"A2"},
+    {w:"Büro", a:"das", l:"A2"}, {w:"Baum", a:"der", l:"A2"}, {w:"Blume", a:"die", l:"A2"},
+    {w:"Wald", a:"der", l:"A2"}, {w:"Meer", a:"das", l:"A2"}, {w:"See", a:"der", l:"A2"},
+    {w:"Berg", a:"der", l:"A2"}, {w:"Wetter", a:"das", l:"A2"}, {w:"Regen", a:"der", l:"A2"},
+    {w:"Sonne", a:"die", l:"A2"}, {w:"Wind", a:"der", l:"A2"}, {w:"Schnee", a:"der", l:"A2"},
+    {w:"Wohnung", a:"die", l:"A2"}, {w:"Schlüssel", a:"der", l:"A2"}, {w:"Garten", a:"der", l:"A2"},
+    {w:"Balkon", a:"der", l:"A2"}, {w:"Rechnung", a:"die", l:"A2"}, {w:"Preis", a:"der", l:"A2"},
+    {w:"Supermarkt", a:"der", l:"A2"}, {w:"Arzt", a:"der", l:"A2"}, {w:"Termin", a:"der", l:"A2"},
+    {w:"Reparatur", a:"die", l:"A2"}, {w:"Ausbildung", a:"die", l:"A2"}, {w:"Unterricht", a:"der", l:"A2"},
+
+    // --- LEVEL B1 (Society, Media, Abstract, Health, Feelings) ---
+    {w:"Abteilung", a:"die", l:"B1"}, {w:"Angebot", a:"das", l:"B1"}, {w:"Besuch", a:"der", l:"B1"}, 
+    {w:"Erfahrung", a:"die", l:"B1"}, {w:"Gefühl", a:"das", l:"B1"}, {w:"Hoffnung", a:"die", l:"B1"}, 
+    {w:"Meinung", a:"die", l:"B1"}, {w:"Umwelt", a:"die", l:"B1"}, {w:"Verkehr", a:"der", l:"B1"}, 
+    {w:"Zukunft", a:"die", l:"B1"}, {w:"Erfolg", a:"der", l:"B1"}, {w:"Gedanke", a:"der", l:"B1"}, 
+    {w:"Gesetz", a:"das", l:"B1"}, {w:"Heimat", a:"die", l:"B1"}, {w:"Lösung", a:"die", l:"B1"},
+    {w:"Gesellschaft", a:"die", l:"B1"}, {w:"Regierung", a:"die", l:"B1"}, {w:"Politik", a:"die", l:"B1"},
+    {w:"Wahl", a:"die", l:"B1"}, {w:"Sicherheit", a:"die", l:"B1"}, {w:"Frieden", a:"der", l:"B1"},
+    {w:"Krieg", a:"der", l:"B1"}, {w:"Nachricht", a:"die", l:"B1"}, {w:"Information", a:"die", l:"B1"},
+    {w:"Werbung", a:"die", l:"B1"}, {w:"Internet", a:"das", l:"B1"}, {w:"Netzwerk", a:"das", l:"B1"},
+    {w:"Krankheit", a:"die", l:"B1"}, {w:"Gesundheit", a:"die", l:"B1"}, {w:"Medizin", a:"die", l:"B1"},
+    {w:"Unfall", a:"der", l:"B1"}, {w:"Schmerz", a:"der", l:"B1"}, {w:"Angst", a:"die", l:"B1"},
+    {w:"Spaß", a:"der", l:"B1"}, {w:"Traum", a:"der", l:"B1"}, {w:"Wunsch", a:"der", l:"B1"},
+    {w:"Ziel", a:"das", l:"B1"}, {w:"Plan", a:"der", l:"B1"}, {w:"Grund", a:"der", l:"B1"},
+    {w:"Folge", a:"die", l:"B1"}, {w:"Ergebnis", a:"das", l:"B1"}, {w:"Unterschied", a:"der", l:"B1"},
+    {w:"Möglichkeit", a:"die", l:"B1"}, {w:"Geschichte", a:"die", l:"B1"}, {w:"Kultur", a:"die", l:"B1"},
+
+    // --- LEVEL B2 (Academic, Business, Abstract, Science, Nuance) ---
+    {w:"Auseinandersetzung", a:"die", l:"B2"}, {w:"Bewusstsein", a:"das", l:"B2"}, {w:"Eigenschaft", a:"die", l:"B2"}, 
+    {w:"Fortschritt", a:"der", l:"B2"}, {w:"Herausforderung", a:"die", l:"B2"}, {w:"Leistung", a:"die", l:"B2"}, 
+    {w:"Voraussetzung", a:"die", l:"B2"}, {w:"Wettbewerb", a:"der", l:"B2"}, {w:"Zusammenhang", a:"der", l:"B2"}, 
+    {w:"Verantwortung", a:"die", l:"B2"}, {w:"Eindruck", a:"der", l:"B2"}, {w:"Maßnahme", a:"die", l:"B2"}, 
+    {w:"Forschung", a:"die", l:"B2"}, {w:"Anspruch", a:"der", l:"B2"}, {w:"Analyse", a:"die", l:"B2"},
+    {w:"Theorie", a:"die", l:"B2"}, {w:"Methode", a:"die", l:"B2"}, {w:"Prinzip", a:"das", l:"B2"},
+    {w:"Struktur", a:"die", l:"B2"}, {w:"Prozess", a:"der", l:"B2"}, {w:"Faktor", a:"der", l:"B2"},
+    {w:"Definition", a:"die", l:"B2"}, {w:"Funktion", a:"die", l:"B2"}, {w:"Bedeutung", a:"die", l:"B2"},
+    {w:"Wirtschaft", a:"die", l:"B2"}, {w:"Industrie", a:"die", l:"B2"}, {w:"Handel", a:"der", l:"B2"},
+    {w:"Markt", a:"der", l:"B2"}, {w:"Konkurrenz", a:"die", l:"B2"}, {w:"Produkt", a:"das", l:"B2"},
+    {w:"Qualität", a:"die", l:"B2"}, {w:"Verhalten", a:"das", l:"B2"}, {w:"Charakter", a:"der", l:"B2"},
+    {w:"Persönlichkeit", a:"die", l:"B2"}, {w:"Emotion", a:"die", l:"B2"}, {w:"Intelligenz", a:"die", l:"B2"},
+    {w:"Wissenschaft", a:"die", l:"B2"}, {w:"Energie", a:"die", l:"B2"}, {w:"Klima", a:"das", l:"B2"},
+    {w:"Atmosphäre", a:"die", l:"B2"}, {w:"Bedingung", a:"die", l:"B2"}, {w:"Notwendigkeit", a:"die", l:"B2"},
+    {w:"Konsequenz", a:"die", l:"B2"}, {w:"Aspekt", a:"der", l:"B2"}, {w:"Perspektive", a:"die", l:"B2"}
 ];
 
+let activeWords = [];
 let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
 let isLock = false;
 let activeUnit = null;
 let prevUnit = null;
 
-function init() {
-    shuffle(wordData);
-    spawnWord("pos-active"); 
+const levelSelector = document.getElementById('levelSelector');
+
+function loadLevel(level) {
+    if (level === "ALL") {
+        activeWords = [...rawData];
+    } else {
+        activeWords = rawData.filter(item => item.l === level);
+    }
+    document.getElementById('levelCount').innerText = activeWords.length;
+    shuffle(activeWords);
+    currentIndex = 0;
+    
+    // Clear and reset the reel
+    document.getElementById('reel').innerHTML = '';
+    prevUnit = null;
+    spawnWord("pos-active");
     currentIndex++;
-    spawnWord("pos-next");  
-    updateScore();
+    spawnWord("pos-next");
 }
 
 function shuffle(a) {
@@ -179,19 +257,19 @@ function shuffle(a) {
 
 function spawnWord(startPos) {
     const reel = document.getElementById('reel');
-    const data = wordData[currentIndex % wordData.length];
+    const data = activeWords[currentIndex % activeWords.length];
     const unit = document.createElement('div');
     unit.className = `slot-unit ${startPos}`;
-    unit.innerHTML = `<span class="article-reveal">${data.article}</span><span class="word-span">${data.word}</span>`;
+    unit.innerHTML = `<span class="article-reveal">${data.a}</span><span class="word-span">${data.w}</span>`;
     reel.appendChild(unit);
     if (startPos === "pos-active") activeUnit = unit;
     return unit;
 }
 
 function handleChoice(choice) {
-    if (isLock) return;
-    const currentData = wordData[(currentIndex - 1) % wordData.length];
-    const correctArt = currentData.article;
+    if (isLock || activeWords.length === 0) return;
+    const currentData = activeWords[(currentIndex - 1) % activeWords.length];
+    const correctArt = currentData.a;
     const isRight = choice === correctArt;
 
     if (!isRight) {
@@ -208,28 +286,20 @@ function handleChoice(choice) {
     stats.streak++;
     updateScore();
 
-    // The 'resolved' class triggers the article to appear and color change
     activeUnit.classList.add('resolved');
     activeUnit.style.color = `var(--${correctArt})`;
 
-    // Wait 0.9s so user sees the "locked" article before it slides down
     setTimeout(() => {
         const nextInLine = document.querySelector('.pos-next');
-        
         if (prevUnit) {
             prevUnit.className = 'slot-unit pos-exit';
             const toDelete = prevUnit;
             setTimeout(() => toDelete.remove(), 700);
         }
-        
-        // This move is the key: pos-active -> pos-prev
-        // Because 'resolved' remains on the classList, the article stays open!
         prevUnit = activeUnit;
         prevUnit.className = 'slot-unit pos-prev resolved'; 
-        
         activeUnit = nextInLine;
         activeUnit.className = 'slot-unit pos-active';
-        
         currentIndex++;
         spawnWord("pos-next");
         isLock = false;
@@ -242,6 +312,8 @@ function updateScore() {
     document.getElementById('streak').innerText = stats.streak;
 }
 
+levelSelector.addEventListener('change', (e) => loadLevel(e.target.value));
+
 window.onkeydown = (e) => {
     const key = e.key.toLowerCase();
     if (key === 'a') handleChoice('der');
@@ -249,7 +321,10 @@ window.onkeydown = (e) => {
     if (key === 'd') handleChoice('das');
 };
 
-init();
+// Start default level
+loadLevel("A1");
+updateScore();
+
 </script>
 </body>
 </html>
