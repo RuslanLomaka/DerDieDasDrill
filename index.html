@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Der/Die/Das Slot Machine - High Visibility</title>
+    <title>Der/Die/Das Slot Machine - Persistent History</title>
     <style>
         :root {
             --bg: #0b1020;
             --card: #12192d;
-            --muted: #a0aec0; /* Brighter muted color */
+            --muted: #a0aec0;
             --text: #e7ecff;
             --ok: #36c689;
             --bad: #ff6470;
@@ -36,7 +36,7 @@
         /* --- THE REEL SYSTEM --- */
         .stage {
             position: relative;
-            height: 500px; /* Slightly taller for better spacing */
+            height: 520px; /* Increased height so the bottom word stays visible longer */
             background: #080c18;
             border-radius: 32px;
             border: 3px solid var(--border);
@@ -44,9 +44,9 @@
             box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
         }
 
-        /* Ambient Glass Overlays */
+        /* Top/Bottom Vignettes for smooth entry/exit */
         .stage::before, .stage::after {
-            content: ""; position: absolute; left: 0; right: 0; height: 140px; z-index: 10; pointer-events: none;
+            content: ""; position: absolute; left: 0; right: 0; height: 120px; z-index: 10; pointer-events: none;
         }
         .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
         .stage::after { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
@@ -57,29 +57,34 @@
             position: absolute;
             left: 0; right: 0; height: 140px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); /* Slightly slower for a more physical feel */
             font-weight: 800;
             text-align: center;
         }
 
-        /* FIXED VISIBILITY: Larger scale, less blur, more brightness */
+        /* High Visibility States */
         .slot-unit.pos-next { 
             transform: translateY(20px) scale(0.95); 
-            filter: blur(0.8px) brightness(0.8); 
-            opacity: 0.8; 
+            filter: blur(0.8px) brightness(0.6); 
+            opacity: 0.6; 
         }
         .slot-unit.pos-active { 
-            transform: translateY(180px) scale(1); 
+            transform: translateY(190px) scale(1); 
             filter: blur(0) brightness(1); 
             opacity: 1; 
             font-size: 56px;
         }
         .slot-unit.pos-prev { 
-            transform: translateY(340px) scale(0.95); 
+            transform: translateY(360px) scale(0.95); 
             filter: blur(0.8px) brightness(0.8); 
             opacity: 0.8; 
+            font-size: 32px; /* Previous word gets smaller to show solved status */
         }
-        .slot-unit.pos-exit { transform: translateY(500px) scale(0.9); opacity: 0; filter: blur(2px); }
+        .slot-unit.pos-exit { 
+            transform: translateY(550px) scale(0.9); 
+            opacity: 0; 
+            filter: blur(3px); 
+        }
 
         .article-reveal {
             font-size: 24px; margin-bottom: -5px; opacity: 0; font-weight: 400; transition: 0.3s;
@@ -98,7 +103,6 @@
         .btn.die:hover { border-color: var(--die); box-shadow: 0 0 15px var(--die); }
         .btn.das:hover { border-color: var(--das); box-shadow: 0 0 15px var(--das); }
 
-        /* STATS */
         .stat-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 12px; }
         .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
         .stat-value { font-size: 28px; font-weight: 800; margin-top: 5px; }
@@ -139,7 +143,6 @@
 </main>
 
 <script>
-// Logic remains similar but updated to support persistent color in the reel
 const wordData = [
     {word:"Adresse", article:"die"}, {word:"Angst", article:"die"}, {word:"Anzug", article:"der"},
     {word:"Apfel", article:"der"}, {word:"Arbeit", article:"die"}, {word:"Arzt", article:"der"},
@@ -147,7 +150,12 @@ const wordData = [
     {word:"Bett", article:"das"}, {word:"Bild", article:"das"}, {word:"Blume", article:"die"},
     {word:"Brot", article:"das"}, {word:"Bus", article:"der"}, {word:"Computer", article:"der"},
     {word:"Dorf", article:"das"}, {word:"Diskussion", article:"die"}, {word:"Erfolg", article:"der"},
-    {word:"Familie", article:"die"}, {word:"Fenster", article:"das"}, {word:"Film", article:"der"}
+    {word:"Familie", article:"die"}, {word:"Fenster", article:"das"}, {word:"Film", article:"der"},
+    {word:"Firma", article:"die"}, {word:"Flugzeug", article:"das"}, {word:"Frage", article:"die"},
+    {word:"Garten", article:"der"}, {word:"Geschenk", article:"das"}, {word:"Handy", article:"das"},
+    {word:"Haus", article:"das"}, {word:"Idee", article:"die"}, {word:"Jahr", article:"das"},
+    {word:"Kaffee", article:"der"}, {word:"Kind", article:"das"}, {word:"Kleid", article:"das"},
+    {word:"Lösung", article:"die"}, {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}
 ];
 
 let currentIndex = 0;
@@ -189,35 +197,42 @@ function handleChoice(choice) {
     const isRight = choice === correctArt;
     isLock = true;
 
+    // 1. Resolve active word (reveal color and article)
     activeUnit.classList.add('resolved');
-    // Change current word color immediately upon answer
     activeUnit.style.color = isRight ? `var(--${correctArt})` : 'var(--bad)';
     
     if (isRight) { stats.ok++; stats.streak++; } 
     else { stats.bad++; stats.streak = 0; }
 
+    // 2. Wait a moment for the user to see the result, then slide everything
     setTimeout(() => {
         const nextInLine = document.querySelector('.pos-next');
         
+        // Handle the word leaving the visible area (Previous -> Exit)
         if (prevUnit) {
             prevUnit.className = 'slot-unit pos-exit';
-            setTimeout(() => prevUnit.remove(), 500);
+            // Store the reference to delete later so the animation can finish
+            const exitingUnit = prevUnit;
+            setTimeout(() => {
+                if(exitingUnit && exitingUnit.parentNode) exitingUnit.remove();
+            }, 700);
         }
         
-        // Push resolved unit to bottom position
+        // Current solved word slides down to "Previous" slot
         prevUnit = activeUnit;
         prevUnit.className = 'slot-unit pos-prev';
         
-        // Push top unit to active
+        // Blurred top word slides to center "Active" slot
         activeUnit = nextInLine;
         activeUnit.className = 'slot-unit pos-active';
         
+        // Spawn the next word at the top
         currentIndex++;
         spawnWord("pos-next");
 
         updateScore();
         isLock = false;
-    }, 800);
+    }, 900); // 0.9s delay before sliding allows user to "digest" the result
 }
 
 function updateScore() {
@@ -226,6 +241,7 @@ function updateScore() {
     document.getElementById('streak').innerText = stats.streak;
 }
 
+// Shortcuts
 window.onkeydown = (e) => {
     const key = e.key.toLowerCase();
     if (key === 'a') handleChoice('der');
