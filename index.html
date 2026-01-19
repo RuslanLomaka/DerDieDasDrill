@@ -8,7 +8,7 @@
         :root {
             --bg: #0b1020;
             --card: #12192d;
-            --muted: #9aa6c4;
+            --muted: #5c6b8f;
             --text: #e7ecff;
             --ok: #36c689;
             --bad: #ff6470;
@@ -25,7 +25,7 @@
             background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
             color: var(--text);
             min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         header { 
@@ -36,108 +36,107 @@
         .pill { 
             background: #1a2340; border: 1px solid var(--border); color: var(--text); 
             padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; 
-            transition: all 0.2s;
         }
-        .pill:hover { background: var(--border); }
         
         main { 
             width: 100%; max-width: 900px; display: grid; 
             grid-template-columns: 1fr 320px; gap: 24px; padding: 20px; 
         }
-        @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+        @media (max-width: 800px) { main { grid-template-columns: 1fr; overflow-y: auto; } }
 
-        /* --- THE SLOT REEL --- */
+        /* --- THE DEPTH REEL SYSTEM --- */
         .stage {
             position: relative;
-            height: 380px;
+            height: 420px;
             background: #080c18;
-            border-radius: 28px;
+            border-radius: 32px;
             border: 3px solid var(--border);
             overflow: hidden;
-            box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 10px 40px rgba(0,0,0,0.4);
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
         }
+
+        /* Ambient Glass Overlays for Top/Bottom Blur */
+        .stage::before, .stage::after {
+            content: ""; position: absolute; left: 0; right: 0; height: 100px; z-index: 10; pointer-events: none;
+        }
+        .stage::before { top: 0; background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%); }
+        .stage::after { bottom: 0; background: linear-gradient(to top, var(--bg) 0%, transparent 100%); }
 
         .reel-container {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
         }
 
         .slot-unit {
             position: absolute;
-            left: 0; right: 0;
-            height: 140px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 100%; height: 120px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             font-weight: 800;
             text-align: center;
         }
 
-        /* Movement States */
-        .slot-unit.incoming { transform: translateY(-160%); opacity: 0; }
-        .slot-unit.active   { transform: translateY(120px); opacity: 1; font-size: 48px; }
-        .slot-unit.outgoing { transform: translateY(420px); opacity: 0; }
+        /* Depth States */
+        .slot-unit.pos-next { 
+            transform: translateY(0px) scale(0.7); 
+            filter: blur(5px); 
+            opacity: 0.3; 
+        }
+        .slot-unit.pos-active { 
+            transform: translateY(150px) scale(1); 
+            filter: blur(0); 
+            opacity: 1; 
+            font-size: 48px;
+        }
+        .slot-unit.pos-prev { 
+            transform: translateY(300px) scale(0.8); 
+            filter: blur(2px); 
+            opacity: 0.2; 
+        }
+        .slot-unit.pos-exit {
+            transform: translateY(450px) scale(0.5);
+            opacity: 0;
+        }
 
         .article-reveal {
             font-size: 22px;
             margin-bottom: -5px;
-            text-transform: lowercase;
             opacity: 0;
-            transition: all 0.3s ease;
-            color: var(--muted);
+            transition: 0.3s;
         }
-        
-        .slot-unit.resolved .article-reveal { opacity: 1; transform: translateY(-5px); }
-        .slot-unit.resolved { font-size: 38px; }
+        .pos-active.resolved .article-reveal { opacity: 1; }
+        .pos-active.resolved { font-size: 40px; }
 
-        /* --- INTERFACE --- */
+        /* --- UI CONTROLS --- */
         .controls-area { margin-top: 30px; text-align: center; }
         .btnrow { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
-        
         .btn {
-            flex: 1; max-width: 140px;
-            padding: 18px; border-radius: 20px; border: 2px solid var(--border);
-            background: #172142; color: #fff; font-size: 18px; font-weight: 800; cursor: pointer;
-            transition: all 0.2s;
+            flex: 1; max-width: 120px; padding: 18px; border-radius: 20px; 
+            border: 2px solid var(--border); background: #172142; color: #fff; 
+            font-size: 18px; font-weight: 800; cursor: pointer;
         }
-        .btn:active { transform: scale(0.92); }
-        .btn.der:hover { border-color: var(--der); box-shadow: 0 0 15px rgba(75, 139, 255, 0.3); }
-        .btn.die:hover { border-color: var(--die); box-shadow: 0 0 15px rgba(255, 108, 174, 0.3); }
-        .btn.das:hover { border-color: var(--das); box-shadow: 0 0 15px rgba(139, 216, 165, 0.3); }
+        .btn.der:hover { border-color: var(--der); }
+        .btn.die:hover { border-color: var(--die); }
+        .btn.das:hover { border-color: var(--das); }
 
-        .feedback-bar { min-height: 50px; color: var(--muted); font-size: 15px; font-weight: 500; }
-
-        /* --- ASIDE --- */
         .stat-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 12px; }
-        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;}
+        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px;}
         .stat-value { font-size: 28px; font-weight: 800; }
-        
-        .kbd { 
-            background: #000; padding: 3px 7px; border-radius: 6px; font-size: 11px; 
-            border: 1px solid var(--border); font-family: monospace;
-        }
-
-        .hint-card {
-            background: #111936; border: 1px dashed var(--border); padding: 15px;
-            border-radius: 15px; font-size: 13px; color: var(--muted); line-height: 1.5;
-        }
+        .kbd { background: #000; padding: 3px 7px; border-radius: 6px; font-size: 11px; border: 1px solid var(--border); font-family: monospace; }
     </style>
 </head>
 <body>
 
 <header>
-    <h2 style="color:var(--accent); margin:0; letter-spacing: -0.5px;">Deutsch <span style="font-weight: 300;">Artikel</span></h2>
-    <button class="pill" id="resetStats">Reset Score</button>
+    <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Artikel</span></h2>
+    <button class="pill" id="resetStats">Reset</button>
 </header>
 
 <main>
     <section>
         <div class="stage">
-            <div id="reel" class="reel-container">
-                </div>
+            <div id="reel" class="reel-container"></div>
         </div>
 
         <div class="controls-area">
@@ -146,23 +145,23 @@
                 <button class="btn die" onclick="handleChoice('die')">die</button>
                 <button class="btn das" onclick="handleChoice('das')">das</button>
             </div>
-            <div id="feedback" class="feedback-bar">Drücke <span class="kbd">A</span> <span class="kbd">S</span> <span class="kbd">D</span> zum Steuern</div>
+            <div id="feedback" style="color:var(--muted); font-size:14px; min-height:20px;">
+                Tippe <span class="kbd">A</span> <span class="kbd">S</span> <span class="kbd">D</span>
+            </div>
         </div>
     </section>
 
     <aside>
         <div class="stat-box">
             <div class="stat-label">Richtig / Falsch</div>
-            <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> <span style="color:var(--border)">/</span> <span id="scoreBad" style="color:var(--bad)">0</span></div>
+            <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
         </div>
-        
         <div class="stat-box">
             <div class="stat-label">Streak</div>
             <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
         </div>
-
-        <div class="hint-card">
-            <b>Regeln:</b><br>
+        <div style="background: #111936; border: 1px dashed var(--border); padding: 15px; border-radius: 15px; font-size: 13px; color: var(--muted);">
+            <b>Schnell-Regeln:</b><br>
             • -ung, -heit, -keit → <b style="color:var(--die)">die</b><br>
             • -chen, -lein, -ment → <b style="color:var(--das)">das</b><br>
             • -ismus, -ling, -er → <b style="color:var(--der)">der</b>
@@ -171,122 +170,91 @@
 </main>
 
 <script>
-// --- FULL DATASET ---
 const wordData = [
-    {word:"Adresse", article:"die", translation:"address"}, {word:"Angst", article:"die", translation:"fear"},
-    {word:"Anzug", article:"der", translation:"suit"}, {word:"Apfel", article:"der", translation:"apple"},
-    {word:"Arbeit", article:"die", translation:"work"}, {word:"Arzt", article:"der", translation:"doctor"},
-    {word:"Auto", article:"das", translation:"car"}, {word:"Auge", article:"das", translation:"eye"},
-    {word:"Bahnhof", article:"der", translation:"train station"}, {word:"Bett", article:"das", translation:"bed"},
-    {word:"Bild", article:"das", translation:"picture"}, {word:"Blume", article:"die", translation:"flower"},
-    {word:"Brot", article:"das", translation:"bread"}, {word:"Bus", article:"der", translation:"bus"},
-    {word:"Computer", article:"der", translation:"computer"}, {word:"Dorf", article:"das", translation:"village"},
-    {word:"Diskussion", article:"die", translation:"discussion"}, {word:"Ei", article:"das", translation:"egg"},
-    {word:"Erfolg", article:"der", translation:"success"}, {word:"Familie", article:"die", translation:"family"},
-    {word:"Fenster", article:"das", translation:"window"}, {word:"Film", article:"der", translation:"film"},
-    {word:"Firma", article:"die", translation:"company"}, {word:"Flugzeug", article:"das", translation:"airplane"},
-    {word:"Frage", article:"die", translation:"question"}, {word:"Garten", article:"der", translation:"garden"},
-    {word:"Geschenk", article:"das", translation:"gift"}, {word:"Glück", article:"das", translation:"luck"},
-    {word:"Handy", article:"das", translation:"mobile phone"}, {word:"Haus", article:"das", translation:"house"},
-    {word:"Idee", article:"die", translation:"idea"}, {word:"Jahr", article:"das", translation:"year"},
-    {word:"Kaffee", article:"der", translation:"coffee"}, {word:"Kind", article:"das", translation:"child"},
-    {word:"Küche", article:"die", translation:"kitchen"}, {word:"Lösung", article:"die", translation:"solution"},
-    {word:"Mädchen", article:"das", translation:"girl"}, {word:"Mann", article:"der", translation:"man"},
-    {word:"Name", article:"der", translation:"name"}, {word:"Problem", article:"das", translation:"problem"},
-    {word:"Rechnung", article:"die", translation:"bill"}, {word:"Schlüssel", article:"der", translation:"key"},
-    {word:"Stadt", article:"die", translation:"city"}, {word:"Stuhl", article:"der", translation:"chair"},
-    {word:"Tür", article:"die", translation:"door"}, {word:"Urlaub", article:"der", translation:"vacation"},
-    {word:"Wasser", article:"das", translation:"water"}, {word:"Woche", article:"die", translation:"week"},
-    {word:"Zimmer", article:"das", translation:"room"}, {word:"Zug", article:"der", translation:"train"},
-    {word:"Abteilung", article:"die", translation:"department"}, {word:"Bäckerei", article:"die", translation:"bakery"},
-    {word:"Büro", article:"das", translation:"office"}, {word:"Dankbarkeit", article:"die", translation:"gratitude"},
-    {word:"Eindruck", article:"der", translation:"impression"}, {word:"Fluss", article:"der", translation:"river"},
-    {word:"Gefühl", article:"das", translation:"feeling"}, {word:"Heimat", article:"die", translation:"homeland"},
-    {word:"Instrument", article:"das", translation:"instrument"}, {word:"Jacke", article:"die", translation:"jacket"},
-    {word:"Kapitel", article:"das", translation:"chapter"}, {word:"Licht", article:"das", translation:"light"},
-    {word:"Messer", article:"das", translation:"knife"}, {word:"Nachricht", article:"die", translation:"news"},
-    {word:"Ort", article:"der", translation:"place"}, {word:"Prüfung", article:"die", translation:"exam"},
-    {word:"Qualität", article:"die", translation:"quality"}, {word:"Regen", article:"der", translation:"rain"},
-    {word:"Sonne", article:"die", translation:"sun"}, {word:"Teppich", article:"der", translation:"carpet"},
-    {word:"Unterschied", article:"der", translation:"difference"}, {word:"Versuch", article:"der", translation:"attempt"},
-    {word:"Wald", article:"der", translation:"forest"}, {word:"Zeitung", article:"die", translation:"newspaper"}
+    {word:"Adresse", article:"die"}, {word:"Angst", article:"die"}, {word:"Anzug", article:"der"},
+    {word:"Apfel", article:"der"}, {word:"Arbeit", article:"die"}, {word:"Arzt", article:"der"},
+    {word:"Auto", article:"das"}, {word:"Auge", article:"das"}, {word:"Bahnhof", article:"der"},
+    {word:"Bett", article:"das"}, {word:"Bild", article:"das"}, {word:"Blume", article:"die"},
+    {word:"Brot", article:"das"}, {word:"Bus", article:"der"}, {word:"Computer", article:"der"},
+    {word:"Dorf", article:"das"}, {word:"Diskussion", article:"die"}, {word:"Erfolg", article:"der"},
+    {word:"Familie", article:"die"}, {word:"Fenster", article:"das"}, {word:"Film", article:"der"},
+    {word:"Firma", article:"die"}, {word:"Flugzeug", article:"das"}, {word:"Frage", article:"die"},
+    {word:"Garten", article:"der"}, {word:"Geschenk", article:"das"}, {word:"Handy", article:"das"},
+    {word:"Haus", article:"das"}, {word:"Idee", article:"die"}, {word:"Lösung", article:"die"},
+    {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}, {word:"Name", article:"der"}
 ];
 
 let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
 let isLock = false;
+let activeUnit = null;
+let prevUnit = null;
 
 function init() {
     shuffle(wordData);
-    spawnWord();
+    // Create first two units
+    spawnWord("pos-active"); // The first word
+    currentIndex++;
+    spawnWord("pos-next");   // The blurred word at top
     updateScore();
 }
 
-function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
+function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [a[i], a[j]] = [a[j], a[i]];
     }
 }
 
-function spawnWord() {
+function spawnWord(startPos) {
     const reel = document.getElementById('reel');
-    const data = wordData[currentIndex];
-
+    const data = wordData[currentIndex % wordData.length];
     const unit = document.createElement('div');
-    unit.className = 'slot-unit incoming';
-    unit.id = 'active-word';
-    unit.innerHTML = `
-        <div class="article-reveal" id="reveal">${data.article}</div>
-        <div class="main-word">${data.word}</div>
-    `;
-
+    unit.className = `slot-unit ${startPos}`;
+    unit.innerHTML = `<div class="article-reveal">${data.article}</div><div>${data.word}</div>`;
     reel.appendChild(unit);
-
-    setTimeout(() => {
-        unit.classList.remove('incoming');
-        unit.classList.add('active');
-    }, 40);
+    if (startPos === "pos-active") activeUnit = unit;
+    return unit;
 }
 
 function handleChoice(choice) {
     if (isLock) return;
-    
-    const correctArt = wordData[currentIndex].article;
-    const unit = document.getElementById('active-word');
-    const feedback = document.getElementById('feedback');
+    const correctArt = wordData[(currentIndex - 1) % wordData.length].article;
     const isRight = choice === correctArt;
-
     isLock = true;
 
-    if (isRight) {
-        stats.ok++;
-        stats.streak++;
-        unit.style.color = `var(--${correctArt})`;
-        feedback.innerHTML = `<span style="color:var(--ok)">Super! +1</span>`;
-    } else {
-        stats.bad++;
-        stats.streak = 0;
-        unit.style.color = `var(--bad)`;
-        feedback.innerHTML = `<span style="color:var(--bad)">Nein, das ist "${correctArt}"</span>`;
-    }
-
-    unit.classList.add('resolved');
+    // Visual result
+    activeUnit.classList.add('resolved');
+    activeUnit.style.color = isRight ? `var(--${correctArt})` : 'var(--bad)';
     
-    // Animation Sequence
-    setTimeout(() => {
-        unit.classList.replace('active', 'outgoing');
-        
-        currentIndex = (currentIndex + 1) % wordData.length;
-        spawnWord();
-        updateScore();
+    if (isRight) { stats.ok++; stats.streak++; } 
+    else { stats.bad++; stats.streak = 0; }
 
-        setTimeout(() => {
-            unit.remove();
-            isLock = false;
-            feedback.innerHTML = `Drücke <span class="kbd">A</span> <span class="kbd">S</span> <span class="kbd">D</span> zum Steuern`;
-        }, 550);
-    }, 900);
+    setTimeout(() => {
+        // Move everything down
+        const nextInLine = document.querySelector('.pos-next');
+        
+        // 1. Current active moves to bottom (becomes blurred prev)
+        if (prevUnit) {
+            prevUnit.className = 'slot-unit pos-exit';
+            const toDelete = prevUnit;
+            setTimeout(() => toDelete.remove(), 600);
+        }
+        
+        prevUnit = activeUnit;
+        prevUnit.className = 'slot-unit pos-prev';
+        
+        // 2. Blurred top word moves to center (becomes sharp active)
+        activeUnit = nextInLine;
+        activeUnit.className = 'slot-unit pos-active';
+        
+        // 3. Spawn new blurred word at top
+        currentIndex++;
+        spawnWord("pos-next");
+
+        updateScore();
+        isLock = false;
+    }, 800);
 }
 
 function updateScore() {
@@ -294,11 +262,6 @@ function updateScore() {
     document.getElementById('scoreBad').innerText = stats.bad;
     document.getElementById('streak').innerText = stats.streak;
 }
-
-document.getElementById('resetStats').onclick = () => {
-    stats = { ok: 0, bad: 0, streak: 0 };
-    updateScore();
-};
 
 window.onkeydown = (e) => {
     const key = e.key.toLowerCase();
@@ -309,6 +272,5 @@ window.onkeydown = (e) => {
 
 init();
 </script>
-
 </body>
 </html>
