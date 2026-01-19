@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Slot Deutsch - Pro Drill</title>
+    <title>Slot Deutsch - Unified Animation</title>
     <style>
         :root {
             --bg: #0b1020;
@@ -12,9 +12,9 @@
             --text: #e7ecff;
             --ok: #36c689;
             --bad: #ff6470;
-            --der: #4b8bff;   /* Blue */
-            --die: #ff6cae;   /* Pink */
-            --das: #ffd84b;   /* Yellow */
+            --der: #4b8bff;
+            --die: #ff6cae;
+            --das: #ffd84b;
             --border: #24335c;
         }
 
@@ -55,13 +55,12 @@
         .slot-unit {
             position: absolute;
             left: 0; right: 0; height: 140px;
-            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 15px;
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 12px;
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             font-weight: 800;
             text-align: center;
         }
 
-        /* SHAKE ANIMATION */
         @keyframes shake {
             0%, 100% { transform: translateY(190px) translateX(0); }
             20%, 60% { transform: translateY(190px) translateX(-10px); }
@@ -70,16 +69,26 @@
         .shake-active { animation: shake 0.3s ease-in-out; }
 
         /* Optical States */
-        .slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(0.8px) brightness(0.6); opacity: 0.6; }
-        .slot-unit.pos-active { transform: translateY(190px) scale(1); filter: blur(0) brightness(1); opacity: 1; font-size: 56px; }
-        .slot-unit.pos-prev { transform: translateY(360px) scale(0.95); filter: blur(0.8px) brightness(0.8); opacity: 0.8; font-size: 32px; }
+        .slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(1px) brightness(0.6); opacity: 0.6; }
+        .slot-unit.pos-active { transform: translateY(190px) scale(1); filter: blur(0) brightness(1); opacity: 1; font-size: 52px; }
+        /* Previous word stays exactly as large as active once solved */
+        .slot-unit.pos-prev { transform: translateY(360px) scale(1); filter: blur(1.5px) brightness(0.8); opacity: 0.8; font-size: 40px; }
         .slot-unit.pos-exit { transform: translateY(550px) scale(0.9); opacity: 0; filter: blur(3px); }
 
         .article-reveal {
-            font-size: 24px; opacity: 0; font-weight: 400; transition: 0.3s;
-            display: inline-block;
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            white-space: nowrap;
         }
-        .resolved .article-reveal { opacity: 0.7; }
+        /* When resolved, the article takes up space and matches font size */
+        .resolved .article-reveal { 
+            opacity: 1; 
+            width: auto; 
+            margin-right: 5px;
+            font-size: inherit; /* Match word font size */
+        }
 
         /* --- CONTROLS --- */
         .controls-area { margin-top: 30px; text-align: center; }
@@ -144,11 +153,8 @@ const wordData = [
     {word:"Firma", article:"die"}, {word:"Flugzeug", article:"das"}, {word:"Frage", article:"die"},
     {word:"Garten", article:"der"}, {word:"Geschenk", article:"das"}, {word:"Handy", article:"das"},
     {word:"Haus", article:"das"}, {word:"Idee", article:"die"}, {word:"Jahr", article:"das"},
-    {word:"Kaffee", article:"der"}, {word:"Kind", article:"das"}, {word:"Lösung", article:"die"},
-    {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}, {word:"Nachricht", article:"die"},
-    {word:"Obst", article:"das"}, {word:"Paket", article:"das"}, {word:"Problem", article:"das"},
-    {word:"Rechnung", article:"die"}, {word:"Schlüssel", article:"der"}, {word:"Stadt", article:"die"},
-    {word:"Universität", article:"die"}, {word:"Verhalten", article:"das"}, {word:"Wald", article:"der"}
+    {word:"Kaffee", article:"der"}, {word:"Kind", article:"das"}, {word:"Kleid", article:"das"},
+    {word:"Lösung", article:"die"}, {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}
 ];
 
 let currentIndex = 0;
@@ -177,7 +183,11 @@ function spawnWord(startPos) {
     const data = wordData[currentIndex % wordData.length];
     const unit = document.createElement('div');
     unit.className = `slot-unit ${startPos}`;
-    unit.innerHTML = `<span class="article-reveal">${data.article}</span><span class="word-span">${data.word}</span>`;
+    // Horizontal layout
+    unit.innerHTML = `
+        <span class="article-reveal">${data.article}</span>
+        <span class="word-span">${data.word}</span>
+    `;
     reel.appendChild(unit);
     if (startPos === "pos-active") activeUnit = unit;
     return unit;
@@ -190,22 +200,21 @@ function handleChoice(choice) {
     const isRight = choice === correctArt;
 
     if (!isRight) {
-        // TRIGGER SHAKE
         activeUnit.classList.add('shake-active');
         setTimeout(() => activeUnit.classList.remove('shake-active'), 300);
-        
         stats.bad++;
         stats.streak = 0;
         updateScore();
-        return; // User must try again
+        return;
     }
 
-    // ON RIGHT CHOICE
+    // Success
     isLock = true;
     stats.ok++;
     stats.streak++;
     updateScore();
 
+    // Make article permanent and same size
     activeUnit.classList.add('resolved');
     activeUnit.style.color = `var(--${correctArt})`;
 
@@ -227,7 +236,7 @@ function handleChoice(choice) {
         currentIndex++;
         spawnWord("pos-next");
         isLock = false;
-    }, 800);
+    }, 850);
 }
 
 function updateScore() {
