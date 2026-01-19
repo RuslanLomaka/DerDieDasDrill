@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Der/Die/Das Slot Machine</title>
+    <title>Der/Die/Das Depth Slot</title>
     <style>
         :root {
             --bg: #0b1020;
             --card: #12192d;
-            --muted: #5c6b8f;
+            --muted: #64748b;
             --text: #e7ecff;
             --ok: #36c689;
             --bad: #ff6470;
-            --der: #4b8bff;
-            --die: #ff6cae;
-            --das: #8bd8a5;
+            --der: #4b8bff;   /* Blue */
+            --die: #ff6cae;   /* Pink */
+            --das: #ffd84b;   /* Yellow */
             --accent: #a3a9ff;
             --border: #24335c;
         }
@@ -47,7 +47,7 @@
         /* --- THE DEPTH REEL SYSTEM --- */
         .stage {
             position: relative;
-            height: 420px;
+            height: 440px;
             background: #080c18;
             border-radius: 32px;
             border: 3px solid var(--border);
@@ -55,12 +55,12 @@
             box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
         }
 
-        /* Ambient Glass Overlays for Top/Bottom Blur */
+        /* Top/Bottom Vignettes */
         .stage::before, .stage::after {
-            content: ""; position: absolute; left: 0; right: 0; height: 100px; z-index: 10; pointer-events: none;
+            content: ""; position: absolute; left: 0; right: 0; height: 120px; z-index: 10; pointer-events: none;
         }
-        .stage::before { top: 0; background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%); }
-        .stage::after { bottom: 0; background: linear-gradient(to top, var(--bg) 0%, transparent 100%); }
+        .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
+        .stage::after { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
         .reel-container {
             position: relative;
@@ -70,33 +70,34 @@
 
         .slot-unit {
             position: absolute;
-            width: 100%; height: 120px;
+            width: 100%; height: 140px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
             font-weight: 800;
             text-align: center;
         }
 
-        /* Depth States */
+        /* Improved Optical States */
         .slot-unit.pos-next { 
-            transform: translateY(0px) scale(0.7); 
-            filter: blur(5px); 
-            opacity: 0.3; 
+            transform: translateY(10px) scale(0.85); 
+            filter: blur(2px) brightness(0.5); 
+            opacity: 0.6; 
         }
         .slot-unit.pos-active { 
             transform: translateY(150px) scale(1); 
-            filter: blur(0); 
+            filter: blur(0) brightness(1); 
             opacity: 1; 
-            font-size: 48px;
+            font-size: 46px;
         }
         .slot-unit.pos-prev { 
-            transform: translateY(300px) scale(0.8); 
-            filter: blur(2px); 
-            opacity: 0.2; 
+            transform: translateY(290px) scale(0.85); 
+            filter: blur(2px) brightness(0.5); 
+            opacity: 0.6; 
         }
         .slot-unit.pos-exit {
-            transform: translateY(450px) scale(0.5);
+            transform: translateY(460px) scale(0.7);
             opacity: 0;
+            filter: blur(4px);
         }
 
         .article-reveal {
@@ -104,9 +105,9 @@
             margin-bottom: -5px;
             opacity: 0;
             transition: 0.3s;
+            font-weight: 400;
         }
-        .pos-active.resolved .article-reveal { opacity: 1; }
-        .pos-active.resolved { font-size: 40px; }
+        .resolved .article-reveal { opacity: 1; }
 
         /* --- UI CONTROLS --- */
         .controls-area { margin-top: 30px; text-align: center; }
@@ -114,23 +115,23 @@
         .btn {
             flex: 1; max-width: 120px; padding: 18px; border-radius: 20px; 
             border: 2px solid var(--border); background: #172142; color: #fff; 
-            font-size: 18px; font-weight: 800; cursor: pointer;
+            font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.2s;
         }
-        .btn.der:hover { border-color: var(--der); }
-        .btn.die:hover { border-color: var(--die); }
-        .btn.das:hover { border-color: var(--das); }
+        .btn.der:hover { border-color: var(--der); box-shadow: 0 0 10px rgba(75,139,255,0.2); }
+        .btn.die:hover { border-color: var(--die); box-shadow: 0 0 10px rgba(255,108,174,0.2); }
+        .btn.das:hover { border-color: var(--das); box-shadow: 0 0 10px rgba(255,216,75,0.2); }
 
         .stat-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 12px; }
-        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px;}
-        .stat-value { font-size: 28px; font-weight: 800; }
+        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 28px; font-weight: 800; margin-top: 5px; }
         .kbd { background: #000; padding: 3px 7px; border-radius: 6px; font-size: 11px; border: 1px solid var(--border); font-family: monospace; }
     </style>
 </head>
 <body>
 
 <header>
-    <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Artikel</span></h2>
-    <button class="pill" id="resetStats">Reset</button>
+    <h2 style="color:var(--accent); margin:0; letter-spacing:-1px;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
+    <button class="pill" onclick="location.reload()">Reset All</button>
 </header>
 
 <main>
@@ -146,25 +147,25 @@
                 <button class="btn das" onclick="handleChoice('das')">das</button>
             </div>
             <div id="feedback" style="color:var(--muted); font-size:14px; min-height:20px;">
-                Tippe <span class="kbd">A</span> <span class="kbd">S</span> <span class="kbd">D</span>
+                <span class="kbd">A</span>=der, <span class="kbd">S</span>=die, <span class="kbd">D</span>=das
             </div>
         </div>
     </section>
 
     <aside>
         <div class="stat-box">
-            <div class="stat-label">Richtig / Falsch</div>
+            <div class="stat-label">Correct / Wrong</div>
             <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
         </div>
         <div class="stat-box">
             <div class="stat-label">Streak</div>
             <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
         </div>
-        <div style="background: #111936; border: 1px dashed var(--border); padding: 15px; border-radius: 15px; font-size: 13px; color: var(--muted);">
-            <b>Schnell-Regeln:</b><br>
-            • -ung, -heit, -keit → <b style="color:var(--die)">die</b><br>
-            • -chen, -lein, -ment → <b style="color:var(--das)">das</b><br>
-            • -ismus, -ling, -er → <b style="color:var(--der)">der</b>
+        <div style="background: #111936; border: 1px dashed var(--border); padding: 15px; border-radius: 15px; font-size: 13px; color: var(--muted); line-height:1.4;">
+            <b>Tipps:</b><br>
+            -ung, -heit, -keit → <span style="color:var(--die)">die</span><br>
+            -chen, -lein, -ment → <span style="color:var(--das)">das</span><br>
+            -ismus, -ling, -er → <span style="color:var(--der)">der</span>
         </div>
     </aside>
 </main>
@@ -181,7 +182,9 @@ const wordData = [
     {word:"Firma", article:"die"}, {word:"Flugzeug", article:"das"}, {word:"Frage", article:"die"},
     {word:"Garten", article:"der"}, {word:"Geschenk", article:"das"}, {word:"Handy", article:"das"},
     {word:"Haus", article:"das"}, {word:"Idee", article:"die"}, {word:"Lösung", article:"die"},
-    {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}, {word:"Name", article:"der"}
+    {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}, {word:"Nachricht", article:"die"},
+    {word:"Obst", article:"das"}, {word:"Paket", article:"das"}, {word:"Problem", article:"das"},
+    {word:"Rechnung", article:"die"}, {word:"Schlüssel", article:"der"}, {word:"Thema", article:"das"}
 ];
 
 let currentIndex = 0;
@@ -192,10 +195,9 @@ let prevUnit = null;
 
 function init() {
     shuffle(wordData);
-    // Create first two units
-    spawnWord("pos-active"); // The first word
+    spawnWord("pos-active"); 
     currentIndex++;
-    spawnWord("pos-next");   // The blurred word at top
+    spawnWord("pos-next");  
     updateScore();
 }
 
@@ -219,42 +221,44 @@ function spawnWord(startPos) {
 
 function handleChoice(choice) {
     if (isLock) return;
-    const correctArt = wordData[(currentIndex - 1) % wordData.length].article;
+    const currentData = wordData[(currentIndex - 1) % wordData.length];
+    const correctArt = currentData.article;
     const isRight = choice === correctArt;
     isLock = true;
 
-    // Visual result
+    // Resolve active word
     activeUnit.classList.add('resolved');
+    // Change word color to its gender color immediately
     activeUnit.style.color = isRight ? `var(--${correctArt})` : 'var(--bad)';
     
     if (isRight) { stats.ok++; stats.streak++; } 
     else { stats.bad++; stats.streak = 0; }
 
     setTimeout(() => {
-        // Move everything down
         const nextInLine = document.querySelector('.pos-next');
         
-        // 1. Current active moves to bottom (becomes blurred prev)
+        // Move prev out
         if (prevUnit) {
             prevUnit.className = 'slot-unit pos-exit';
             const toDelete = prevUnit;
-            setTimeout(() => toDelete.remove(), 600);
+            setTimeout(() => toDelete.remove(), 500);
         }
         
+        // Active moves down, keeps its color
         prevUnit = activeUnit;
         prevUnit.className = 'slot-unit pos-prev';
         
-        // 2. Blurred top word moves to center (becomes sharp active)
+        // Next moves to active
         activeUnit = nextInLine;
         activeUnit.className = 'slot-unit pos-active';
         
-        // 3. Spawn new blurred word at top
+        // Spawn new one
         currentIndex++;
         spawnWord("pos-next");
 
         updateScore();
         isLock = false;
-    }, 800);
+    }, 700);
 }
 
 function updateScore() {
