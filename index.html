@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Slot Deutsch - Unified Animation</title>
+    <title>Slot Deutsch - Unified Motion</title>
     <style>
         :root {
             --bg: #0b1020;
@@ -31,9 +31,7 @@
         .pill { background: #1a2340; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; }
         
         main { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 20px; }
-        @media (max-width: 800px) { main { grid-template-columns: 1fr; overflow-y: auto; } }
 
-        /* --- THE REEL SYSTEM --- */
         .stage {
             position: relative;
             height: 520px;
@@ -55,42 +53,42 @@
         .slot-unit {
             position: absolute;
             left: 0; right: 0; height: 140px;
-            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 12px;
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             font-weight: 800;
-            text-align: center;
         }
 
         @keyframes shake {
             0%, 100% { transform: translateY(190px) translateX(0); }
-            20%, 60% { transform: translateY(190px) translateX(-10px); }
-            40%, 80% { transform: translateY(190px) translateX(10px); }
+            20%, 60% { transform: translateY(190px) translateX(-15px); }
+            40%, 80% { transform: translateY(190px) translateX(15px); }
         }
         .shake-active { animation: shake 0.3s ease-in-out; }
 
-        /* Optical States */
-        .slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(1px) brightness(0.6); opacity: 0.6; }
+        .slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(1.5px) brightness(0.5); opacity: 0.5; }
         .slot-unit.pos-active { transform: translateY(190px) scale(1); filter: blur(0) brightness(1); opacity: 1; font-size: 52px; }
-        /* Previous word stays exactly as large as active once solved */
-        .slot-unit.pos-prev { transform: translateY(360px) scale(1); filter: blur(1.5px) brightness(0.8); opacity: 0.8; font-size: 40px; }
-        .slot-unit.pos-exit { transform: translateY(550px) scale(0.9); opacity: 0; filter: blur(3px); }
+        /* Keep pos-prev large and clear enough to see the result */
+        .slot-unit.pos-prev { transform: translateY(360px) scale(0.95); filter: blur(1.5px) brightness(0.7); opacity: 0.7; font-size: 40px; }
+        .slot-unit.pos-exit { transform: translateY(550px) scale(0.8); opacity: 0; filter: blur(4px); }
 
         .article-reveal {
             opacity: 0;
-            width: 0;
+            max-width: 0;
+            display: inline-block;
             overflow: hidden;
-            transition: all 0.4s ease;
+            transition: opacity 0.3s ease, max-width 0.4s ease;
             white-space: nowrap;
-        }
-        /* When resolved, the article takes up space and matches font size */
-        .resolved .article-reveal { 
-            opacity: 1; 
-            width: auto; 
-            margin-right: 5px;
-            font-size: inherit; /* Match word font size */
+            margin-right: 0;
+            font-size: inherit;
         }
 
-        /* --- CONTROLS --- */
+        /* Logic: once resolved, the article stays open permanently in all states */
+        .resolved .article-reveal { 
+            opacity: 1; 
+            max-width: 200px; /* Large enough for 'einen' etc */
+            margin-right: 15px;
+        }
+
         .controls-area { margin-top: 30px; text-align: center; }
         .btnrow { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
         .btn {
@@ -114,12 +112,11 @@
     <button class="pill" onclick="location.reload()">Reset All</button>
 </header>
 
-<main>
+<main style="width:100%; max-width:900px; display:grid; grid-template-columns: 1fr 320px; gap:24px; padding:20px;">
     <section>
         <div class="stage">
             <div id="reel" class="reel-container"></div>
         </div>
-
         <div class="controls-area">
             <div class="btnrow">
                 <button class="btn der" onclick="handleChoice('der')">der</button>
@@ -153,8 +150,10 @@ const wordData = [
     {word:"Firma", article:"die"}, {word:"Flugzeug", article:"das"}, {word:"Frage", article:"die"},
     {word:"Garten", article:"der"}, {word:"Geschenk", article:"das"}, {word:"Handy", article:"das"},
     {word:"Haus", article:"das"}, {word:"Idee", article:"die"}, {word:"Jahr", article:"das"},
-    {word:"Kaffee", article:"der"}, {word:"Kind", article:"das"}, {word:"Kleid", article:"das"},
-    {word:"Lösung", article:"die"}, {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"}
+    {word:"Kaffee", article:"der"}, {word:"Kind", article:"das"}, {word:"Kleidung", article:"die"},
+    {word:"Lösung", article:"die"}, {word:"Mädchen", article:"das"}, {word:"Mann", article:"der"},
+    {word:"Nachricht", article:"die"}, {word:"Obst", article:"das"}, {word:"Problem", article:"das"},
+    {word:"Schlüssel", article:"der"}, {word:"Stadt", article:"die"}, {word:"Universität", article:"die"}
 ];
 
 let currentIndex = 0;
@@ -183,11 +182,7 @@ function spawnWord(startPos) {
     const data = wordData[currentIndex % wordData.length];
     const unit = document.createElement('div');
     unit.className = `slot-unit ${startPos}`;
-    // Horizontal layout
-    unit.innerHTML = `
-        <span class="article-reveal">${data.article}</span>
-        <span class="word-span">${data.word}</span>
-    `;
+    unit.innerHTML = `<span class="article-reveal">${data.article}</span><span class="word-span">${data.word}</span>`;
     reel.appendChild(unit);
     if (startPos === "pos-active") activeUnit = unit;
     return unit;
@@ -208,16 +203,16 @@ function handleChoice(choice) {
         return;
     }
 
-    // Success
     isLock = true;
     stats.ok++;
     stats.streak++;
     updateScore();
 
-    // Make article permanent and same size
+    // The 'resolved' class triggers the article to appear and color change
     activeUnit.classList.add('resolved');
     activeUnit.style.color = `var(--${correctArt})`;
 
+    // Wait 0.9s so user sees the "locked" article before it slides down
     setTimeout(() => {
         const nextInLine = document.querySelector('.pos-next');
         
@@ -227,8 +222,10 @@ function handleChoice(choice) {
             setTimeout(() => toDelete.remove(), 700);
         }
         
+        // This move is the key: pos-active -> pos-prev
+        // Because 'resolved' remains on the classList, the article stays open!
         prevUnit = activeUnit;
-        prevUnit.className = 'slot-unit pos-prev';
+        prevUnit.className = 'slot-unit pos-prev resolved'; 
         
         activeUnit = nextInLine;
         activeUnit.className = 'slot-unit pos-active';
@@ -236,7 +233,7 @@ function handleChoice(choice) {
         currentIndex++;
         spawnWord("pos-next");
         isLock = false;
-    }, 850);
+    }, 900);
 }
 
 function updateScore() {
