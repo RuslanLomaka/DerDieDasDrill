@@ -3,18 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Slot Deutsch - Ultimate Edition</title>
+    <title>Slot Deutsch</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="credits">
+    <div class="credits">
         Created by Ruslan Lomaka | 
         <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank">LinkedIn</a>
     </div>
 
 <header>
-    <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
+    <h2 style="color:var(--accent); margin:0; font-size: 20px;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
     <div class="controls-top">
         <select class="level-select" id="levelSelector">
             <option value="A1">Level A1</option>
@@ -28,41 +27,39 @@
 </header>
 
 <main>
-    <div class="game-hud mobile-only">
-        <div class="stat-pill">Streak: <span id="streakMobile" style="color:var(--accent)">0</span></div>
-        <div class="stat-pill">Score: <span id="scoreOkMobile" style="color:var(--ok)">0</span>/<span id="scoreBadMobile" style="color:var(--bad)">0</span></div>
+    <div class="game-hud">
+        <div class="stat-item">
+            <span class="label">Streak</span>
+            <span class="value" id="streak" style="color:var(--accent)">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Score</span>
+            <span class="value">
+                <span id="scoreOk" style="color:var(--ok)">0</span> : <span id="scoreBad" style="color:var(--bad)">0</span>
+            </span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Words</span>
+            <span class="value" id="levelCount" style="color: var(--muted)">0</span>
+        </div>
     </div>
 
-    <section class="game-area">
+    <div class="stage-wrapper">
         <div class="stage">
             <div id="reel" class="reel-container"></div>
         </div>
-        
-        <div class="controls-area">
-            <button class="btn der" onclick="handleChoice('der')">der</button>
-            <button class="btn die" onclick="handleChoice('die')">die</button>
-            <button class="btn das" onclick="handleChoice('das')">das</button>
-        </div>
-    </section>
+    </div>
 
-    <aside class="desktop-only">
-        <div class="stat-box">
-            <div class="stat-label">Richtig / Falsch</div>
-            <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Streak</div>
-            <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
-        </div>
-        <div class="stat-box" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
-            <b style="color:var(--text)">Vokabeln:</b><br>
-            <span id="levelCount">0</span> Wörter.
-        </div>
-    </aside>
+    <div class="controls-area">
+        <button class="btn der" onclick="handleChoice('der')">der</button>
+        <button class="btn die" onclick="handleChoice('die')">die</button>
+        <button class="btn das" onclick="handleChoice('das')">das</button>
+    </div>
 </main>
 
 <script src="words.js"></script>
 <script>
+// --- GAME LOGIC ---
 let activeWords = [];
 let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
