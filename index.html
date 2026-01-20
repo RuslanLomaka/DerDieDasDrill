@@ -2,7 +2,6 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <!-- iOS safe-area + stable viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Slot Deutsch</title>
   <link rel="stylesheet" href="style.css">
@@ -56,7 +55,7 @@
   </div>
 
   <div class="stage-wrapper">
-    <div class="stage">
+    <div class="stage" id="stage">
       <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
       <div id="reel" class="reel-container"></div>
     </div>
@@ -226,6 +225,45 @@ function refreshActiveTranslation() {
 }
 
 /* =========================
+   SLOT POSITIONING (never clip prev)
+   ========================= */
+function updateSlotPositions() {
+  const stage = document.getElementById('stage');
+  if (!stage) return;
+
+  const stageH = stage.clientHeight;
+  const slotH = 140; // keep synced with CSS
+
+  // desired proportions (feel free to tweak later)
+  let yNext   = Math.round(stageH * 0.06);
+  let yActive = Math.round(stageH * 0.30);
+  let yPrev   = Math.round(stageH * 0.62);
+  let yExit   = stageH + 40;
+
+  // hard clamps to guarantee visibility
+  const maxPrev = stageH - slotH - 10;          // keep fully inside
+  const minPrev = Math.max(yActive + 70, 0);    // don't overlap active
+
+  yPrev = Math.min(yPrev, maxPrev);
+  yPrev = Math.max(yPrev, minPrev);
+
+  // keep active in reasonable range
+  yActive = Math.min(yActive, Math.max(120, stageH - slotH - 60));
+  yActive = Math.max(yActive, 90);
+
+  // if stage is very short, pull next closer
+  yNext = Math.min(yNext, Math.max(18, yActive - 110));
+
+  document.documentElement.style.setProperty('--y-next',   `${yNext}px`);
+  document.documentElement.style.setProperty('--y-active', `${yActive}px`);
+  document.documentElement.style.setProperty('--y-prev',   `${yPrev}px`);
+  document.documentElement.style.setProperty('--y-exit',   `${yExit}px`);
+}
+
+window.addEventListener('resize', updateSlotPositions);
+window.addEventListener('orientationchange', () => setTimeout(updateSlotPositions, 80));
+
+/* =========================
    CORE GAME
    ========================= */
 function shuffle(a) {
@@ -242,9 +280,13 @@ function spawnWord(startPos) {
   const unit = document.createElement('div');
   unit.className = `slot-unit ${startPos}`;
   unit.innerHTML =
-    `<span class="article-reveal">${data.a}</span>` +
-    `<span class="word-span">${data.w}</span>` +
-    `<div class="sub-translation"></div>`;
+    `<div class="slot-content">` +
+      `<div class="caption-row">` +
+        `<span class="article-reveal">${data.a}</span>` +
+        `<span class="word-span">${data.w}</span>` +
+      `</div>` +
+      `<div class="sub-translation"></div>` +
+    `</div>`;
 
   reel.appendChild(unit);
 
@@ -323,6 +365,7 @@ window.onkeydown = (e) => {
 
 setLangIndex(0);
 rebuildWordPool();
+updateSlotPositions();
 updateScore();
 </script>
 </body>
