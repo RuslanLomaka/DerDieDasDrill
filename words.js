@@ -1,4 +1,4 @@
-const rawDataA1 = [
+const rawData = [
   // --- LEVEL A1 (The Basics) ---
   {w:"Abend",a:"der",l:"A1",t:{en:"evening",uk:"вечір"}},
   {w:"Adresse",a:"die",l:"A1",t:{en:"address",uk:"адреса"}},
