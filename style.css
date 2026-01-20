@@ -22,7 +22,7 @@ body {
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
 
-    /* REAL MOBILE FIX: use dynamic viewport (prevents huge gaps / address bar issues) */
+    /* Stable on real phones */
     min-height: 100vh;
     height: 100dvh;
 
@@ -77,11 +77,11 @@ main {
     padding: 10px;
     position: relative;
 
-    /* IMPORTANT: remove “gap between stage and buttons” on real phones */
+    /* Keep layout tight (no huge gaps) */
     justify-content: flex-start;
 }
 
-/* 1. HUD (Stats Bar) - Horizontal Layout */
+/* 1. HUD */
 .game-hud {
     flex: 0 0 50px;
     display: flex;
@@ -102,22 +102,25 @@ main {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-.stat-item .value { font-size: 18px; font-weight: 800; }
+.stat-item .value {
+    font-size: 18px;
+    font-weight: 800;
+}
 
-/* 2. STAGE AREA (NO MORE flex:1 GAP!) */
+/* 2. STAGE AREA */
 .stage-wrapper {
-    flex: 0 0 auto; /* <-- key change */
+    flex: 0 0 auto;             /* IMPORTANT: prevents pushing buttons far down */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    margin-bottom: 12px; /* keeps buttons close */
+    margin-bottom: 12px;
 }
 
 .stage {
     position: relative;
     width: 320px;
-    height: 480px;
+    height: 480px;              /* desktop/base */
     background: #080c18;
     border-radius: 24px;
     border: 3px solid var(--border);
@@ -126,7 +129,8 @@ main {
     transform: scale(1);
 }
 
-.stage::before, .stage::after {
+.stage::before,
+.stage::after {
     content: "";
     position: absolute;
     left: 0;
@@ -138,14 +142,12 @@ main {
 .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
 .stage::after  { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
-/* 3. CONTROLS (Pinned right under stage, not far away) */
+/* 3. CONTROLS */
 .controls-area {
-    flex: 0 0 70px;
+    flex: 0 0 90px;
     display: flex;
     gap: 8px;
     width: 100%;
-
-    /* keep buttons visible above Android gesture bar */
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -161,8 +163,8 @@ main {
     transition: transform 0.1s;
     touch-action: manipulation;
 }
-.btn:active { transform: translateY(4px); box-shadow: none; }
 
+.btn:active { transform: translateY(4px); box-shadow: none; }
 .btn.der { background: var(--der); }
 .btn.die { background: var(--die); }
 .btn.das { background: var(--das); }
@@ -192,7 +194,7 @@ main {
 }
 .resolved .article-reveal { opacity: 1; max-width: 100px; margin-right: 10px; }
 
-/* Animation Positions (Matched to 480px stage height) */
+/* Base positions (480px stage) */
 .slot-unit.pos-next   { transform: translateY(20px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
 .slot-unit.pos-active { transform: translateY(170px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
 .slot-unit.pos-prev   { transform: translateY(340px) scale(0.8); opacity: 0.5; filter: blur(2px); }
@@ -205,6 +207,7 @@ main {
     75% { transform: translateY(170px) translateX(10px); }
 }
 
+/* Credits */
 .credits {
     position: fixed;
     bottom: 2px;
@@ -216,7 +219,7 @@ main {
 }
 .credits a { color: #444; pointer-events: auto; }
 
-/* --- MOBILE RESPONSIVE SCALING (but NOT crazy small / NOT black) --- */
+/* --- HEIGHT-BASED SCALING (kept) --- */
 @media (max-height: 750px) {
     .stage { transform: scale(0.85); }
 }
@@ -226,10 +229,17 @@ main {
     .stat-item .value { font-size: 16px; }
 }
 
-/* --- MOBILE ONLY: neon glow like your emulator screenshot --- */
+/* ===================================================================== */
+/* MOBILE: shorter rectangle + KEEP PREV WORD INSIDE (never below bottom) */
+/* ===================================================================== */
 @media (max-width: 768px) {
-    .controls-area { flex: 0 0 90px; } /* slightly taller, feels like emulator */
 
+    /* Make main rectangle shorter (your request) */
+    .stage {
+        height: 420px; /* was 480px */
+    }
+
+    /* Neon glow (as you liked) */
     .btn.der {
         box-shadow:
             0 0 12px rgba(75,139,255,0.55),
@@ -249,14 +259,21 @@ main {
             0 4px 0 rgba(0,0,0,0.3);
     }
 
-    /* ANDROID CHROME: keep buttons fully visible above bottom UI */
-@media (max-width: 768px) {
-  body { padding-bottom: 18px; } /* extra buffer for Samsung/Chrome UI */
-  main { padding-bottom: 24px; } /* keeps controls from being cut */
+    /* Reposition slot so PREV is fully visible:
+       stage height = 420
+       word height  = 140
+       so prev Y must be <= 280 to stay inside.
+    */
+    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
+    .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
+    .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); } /* 260+140=400 <= 420 ✅ */
+    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }  /* exits below stage */
 
-  .controls-area {
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
+    /* Shake must match the new active Y */
+    .shake-active { animation: shake-mobile 0.3s; }
+    @keyframes shake-mobile {
+        0%, 100% { transform: translateY(140px) translateX(0); }
+        25% { transform: translateY(140px) translateX(-10px); }
+        75% { transform: translateY(140px) translateX(10px); }
+    }
 }
