@@ -66,6 +66,23 @@ header {
     cursor: pointer;
 }
 
+/* --- CREDITS (Iteration 1) --- */
+.credits-top {
+    font-size: 11px;            /* bigger than before (8px) */
+    color: rgba(231, 236, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.credits-top a {
+    color: rgba(163, 169, 255, 0.85);
+    text-decoration: none;
+}
+.credits-top a:hover {
+    text-decoration: underline;
+}
+
 /* --- MAIN CONTAINER --- */
 main {
     flex: 1;
@@ -207,18 +224,6 @@ main {
     75% { transform: translateY(170px) translateX(10px); }
 }
 
-/* Credits */
-.credits {
-    position: fixed;
-    bottom: 2px;
-    right: 5px;
-    font-size: 8px;
-    color: #333;
-    z-index: 5;
-    pointer-events: none;
-}
-.credits a { color: #444; pointer-events: auto; }
-
 /* --- HEIGHT-BASED SCALING (kept) --- */
 @media (max-height: 750px) {
     .stage { transform: scale(0.85); }
@@ -266,8 +271,8 @@ main {
     */
     .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
     .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
-    .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); } /* 260+140=400 <= 420 ✅ */
-    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }  /* exits below stage */
+    .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); }
+    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
 
     /* Shake must match the new active Y */
     .shake-active { animation: shake-mobile 0.3s; }
@@ -276,4 +281,7 @@ main {
         25% { transform: translateY(140px) translateX(-10px); }
         75% { transform: translateY(140px) translateX(10px); }
     }
+
+    /* credits slightly smaller on narrow screens */
+    .credits-top { font-size: 10px; }
 }
