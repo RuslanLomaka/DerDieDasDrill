@@ -176,10 +176,10 @@ main {
     position: absolute;
     top: 10px;
     left: 10px;
-    z-index: 30;                 /* above reel + fades */
+    z-index: 30;
     width: 34px;
     height: 34px;
-    border-radius: 10px;         /* square-ish, soft */
+    border-radius: 10px;
     border: 1px solid rgba(36, 51, 92, 0.9);
     background: rgba(18, 25, 45, 0.35);
     color: var(--text);
@@ -190,17 +190,13 @@ main {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition: opacity 220ms ease, transform 120ms ease, background 220ms ease, border-color 220ms ease;
-    opacity: 1;                  /* fully visible when active */
+    opacity: 1;
     pointer-events: auto;
     font-size: 18px;
     line-height: 1;
 }
-.lang-toggle:active {
-    transform: scale(0.96);
-}
-.lang-toggle.is-dim {
-    opacity: 0.18;               /* almost transparent after der/die/das */
-}
+.lang-toggle:active { transform: scale(0.96); }
+.lang-toggle.is-dim { opacity: 0.18; }
 .lang-toggle:hover {
     background: rgba(18, 25, 45, 0.55);
     border-color: rgba(163, 169, 255, 0.55);
@@ -246,7 +242,6 @@ main {
     transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     font-weight: 800;
 
-    /* prevent overflow */
     padding: 0 18px;
     text-align: center;
     gap: 10px;
@@ -261,9 +256,7 @@ main {
 }
 
 /* Word base size */
-.word-span {
-    font-size: 42px;
-}
+.word-span { font-size: 42px; }
 
 /* Article base size (same as word when revealed) */
 .article-reveal {
@@ -281,9 +274,7 @@ main {
     margin-right: 0;
 }
 
-/* ====== AUTO SHRINK: only when the combined text would overflow ======
-   Both article and word shrink together.
-*/
+/* ====== AUTO SHRINK: both article and word shrink together ====== */
 .slot-unit.pos-active .word-span,
 .slot-unit.pos-active .article-reveal {
     font-size: clamp(22px, 6vw, 42px);
@@ -298,6 +289,25 @@ main {
 .slot-unit.pos-next .article-reveal {
     font-size: clamp(14px, 3.2vw, 22px);
 }
+
+/* --- Translation subtitle (active only) --- */
+.sub-translation {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 86px;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(231, 236, 255, 0.55);
+    font-size: 11px;
+    line-height: 1.1;
+    pointer-events: none;
+}
+.slot-unit.pos-prev .sub-translation,
+.slot-unit.pos-next .sub-translation { display: none; }
+.resolved .sub-translation { display: none; }
 
 /* keep previous readable */
 .slot-unit.pos-prev { opacity: 0.78; filter: blur(0.6px); }
@@ -355,7 +365,6 @@ main {
 
     .stage { height: 420px; }
 
-    /* slightly smaller toggle on mobile */
     .lang-toggle {
         width: 32px;
         height: 32px;
@@ -438,16 +447,9 @@ main {
     .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
     .stat-item .value { font-size: 20px; }
 
-    .stage {
-        width: var(--stage-w);
-    }
+    .stage { width: var(--stage-w); }
 
-    .controls-area {
-        gap: 14px;
-    }
+    .controls-area { gap: 14px; }
     .btn {
         font-size: 22px;
-        border-radius: 16px;
-        padding: 18px 0;
-    }
-}
+        border-
