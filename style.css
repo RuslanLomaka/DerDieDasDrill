@@ -1,3 +1,4 @@
+```css
 /* --- GLOBAL RESET & VARIABLES --- */
 :root {
     --bg: #0b1020;
@@ -17,126 +18,200 @@
 * { box-sizing: border-box; }
 
 body {
-    margin: 0; font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
-    /* Force full height, no scroll */
+
+    /* IMPORTANT: Mobile viewport fix (Android/Chrome address bar + safe areas) */
+    min-height: 100vh;
     height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+
     width: 100vw;
-    display: flex; flex-direction: column;
+    display: flex;
+    flex-direction: column;
+
+    /* Prevent "buttons hidden under browser UI" */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
+
     overflow: hidden;
 }
 
 /* --- HEADER --- */
 header {
-    flex: 0 0 var(--header-h); /* Fixed height */
-    width: 100%; padding: 0 15px;
-    display: flex; justify-content: space-between; align-items: center;
+    flex: 0 0 var(--header-h);
+    width: 100%;
+    padding: 0 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background: rgba(11, 16, 32, 0.95);
     border-bottom: 1px solid var(--border);
     z-index: 10;
 }
 
 .level-select {
-    background: #1a2340; border: 1px solid var(--border); color: var(--accent);
-    padding: 6px 10px; border-radius: 8px; font-size: 14px; font-weight: bold;
+    background: #1a2340;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
     outline: none;
 }
 
 .pill {
-    background: transparent; border: 1px solid var(--border); color: var(--text);
-    padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
 }
 
 /* --- MAIN CONTAINER --- */
 main {
-    flex: 1; /* Takes all remaining space */
-    display: flex; flex-direction: column;
-    width: 100%; max-width: 600px; /* Constrain width on desktop */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
     margin: 0 auto;
     padding: 10px;
+
+    /* Keep bottom controls safely visible on real phones */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+
     position: relative;
 }
 
 /* 1. HUD (Stats Bar) - Horizontal Layout */
 .game-hud {
     flex: 0 0 50px;
-    display: flex; justify-content: space-around; align-items: center;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; margin-bottom: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
     padding: 0 10px;
 }
 
 .stat-item { text-align: center; }
-.stat-item .label { display: block; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-item .value { font-size: 18px; font-weight: 800; }
+.stat-item .label {
+    display: block;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stat-item .value {
+    font-size: 18px;
+    font-weight: 800;
+}
 
 /* 2. STAGE AREA (Flexible) */
 .stage-wrapper {
-    flex: 1; /* Grow to fill space */
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; 
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     margin-bottom: 10px;
 }
 
 .stage {
     position: relative;
-    /* Fixed pixel size to match JS animations */
-    width: 320px; 
-    height: 480px; 
+    width: 320px;
+    height: 480px;
     background: #080c18;
     border-radius: 24px;
     border: 3px solid var(--border);
     box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
     overflow: hidden;
-    /* Default: No scaling */
     transform: scale(1);
 }
 
-.stage::before, .stage::after {
-    content: ""; position: absolute; left: 0; right: 0; height: 100px; z-index: 10; pointer-events: none;
+.stage::before,
+.stage::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100px;
+    z-index: 10;
+    pointer-events: none;
 }
 .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
 .stage::after { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
 /* 3. CONTROLS (Pinned Bottom) */
 .controls-area {
-    flex: 0 0 70px; /* Fixed height */
-    display: flex; gap: 8px; width: 100%;
+    flex: 0 0 70px;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+
+    /* keep away from Android gesture bar / browser UI */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .btn {
-    flex: 1; border-radius: 14px; border: none;
-    font-size: 20px; font-weight: 800; color: #fff;
-    cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+    flex: 1;
+    border-radius: 14px;
+    border: none;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3);
     transition: transform 0.1s;
-    /* Ensure buttons handle touch properly */
-    touch-action: manipulation; 
+    touch-action: manipulation;
 }
+
 .btn:active { transform: translateY(4px); box-shadow: none; }
+
 .btn.der { background: var(--der); }
 .btn.die { background: var(--die); }
 .btn.das { background: var(--das); }
 
 /* --- SLOT ANIMATIONS --- */
 .reel-container { position: relative; width: 100%; height: 100%; }
+
 .slot-unit {
-    position: absolute; left: 0; right: 0; height: 140px;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     font-weight: 800;
 }
+
 .article-reveal {
-    opacity: 0; max-width: 0; overflow: hidden; white-space: nowrap; 
-    transition: 0.3s; margin-right: 0; display: inline-block;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: 0.3s;
+    margin-right: 0;
+    display: inline-block;
 }
 .resolved .article-reveal { opacity: 1; max-width: 100px; margin-right: 10px; }
 
 /* Animation Positions (Matched to 480px stage height) */
-.slot-unit.pos-next { transform: translateY(20px) scale(0.8); opacity: 0.4; filter: blur(2px); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1); opacity: 1; filter: blur(0); font-size: 42px; }
-.slot-unit.pos-prev { transform: translateY(340px) scale(0.8); opacity: 0.5; filter: blur(2px); }
-.slot-unit.pos-exit { transform: translateY(500px) scale(0.6); opacity: 0; }
+.slot-unit.pos-next   { transform: translateY(20px) scale(0.8); opacity: 0.4; filter: blur(2px); }
+.slot-unit.pos-active { transform: translateY(170px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
+.slot-unit.pos-prev   { transform: translateY(340px) scale(0.8); opacity: 0.5; filter: blur(2px); }
+.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6); opacity: 0; }
 
 .shake-active { animation: shake 0.3s; }
 @keyframes shake {
@@ -145,21 +220,53 @@ main {
     75% { transform: translateY(170px) translateX(10px); }
 }
 
-.credits { position: fixed; bottom: 2px; right: 5px; font-size: 8px; color: #333; z-index: 5; pointer-events: none; }
+.credits {
+    position: fixed;
+    bottom: 2px;
+    right: 5px;
+    font-size: 8px;
+    color: #333;
+    z-index: 5;
+    pointer-events: none;
+}
 .credits a { color: #444; pointer-events: auto; }
 
 /* --- MOBILE RESPONSIVE SCALING --- */
 @media (max-height: 750px) {
-    /* Shrink the slot machine if the screen is short */
-    .stage {
-        transform: scale(0.6);
-    }
+    .stage { transform: scale(0.85); }
 }
 @media (max-height: 600px) {
-    /* Shrink even more for very small screens */
-    .stage {
-        transform: scale(0.6);
-    }
+    .stage { transform: scale(0.7); }
     .game-hud { flex-basis: 40px; }
     .stat-item .value { font-size: 16px; }
 }
+
+/* --- REAL PHONE (Android) LOOK: reduce giant empty top, keep layout like emulator --- */
+@media (max-width: 768px) {
+    /* Push stage up a bit (less "dead space" above) */
+    .stage-wrapper {
+        align-items: flex-start;
+        padding-top: 6px;
+    }
+
+    /* Slightly stronger button presence (still same size rules) */
+    .btn.der {
+        box-shadow:
+            0 0 10px rgba(75,139,255,0.55),
+            0 0 20px rgba(75,139,255,0.35),
+            0 4px 0 rgba(0,0,0,0.3);
+    }
+    .btn.die {
+        box-shadow:
+            0 0 10px rgba(255,108,174,0.55),
+            0 0 20px rgba(255,108,174,0.35),
+            0 4px 0 rgba(0,0,0,0.3);
+    }
+    .btn.das {
+        box-shadow:
+            0 0 10px rgba(255,216,75,0.55),
+            0 0 20px rgba(255,216,75,0.35),
+            0 4px 0 rgba(0,0,0,0.3);
+    }
+}
+```
