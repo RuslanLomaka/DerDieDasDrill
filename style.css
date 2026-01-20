@@ -43,7 +43,6 @@ header {
     z-index: 10;
 }
 
-/* Layout helpers for your current HTML */
 .header-row {
     width: 100%;
     display: flex;
@@ -58,7 +57,6 @@ header {
     gap: 10px;
 }
 
-/* Credits line */
 .credits-top {
     font-size: 11px;
     color: rgba(231, 236, 255, 0.65);
@@ -228,10 +226,13 @@ main {
 }
 
 /* Base positions (480px stage) */
-.slot-unit.pos-next   { transform: translateY(20px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
-.slot-unit.pos-prev   { transform: translateY(340px) scale(0.8); opacity: 0.5; filter: blur(2px); }
-.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6); opacity: 0; }
+.slot-unit.pos-next   { transform: translateY(20px)  scale(0.82); opacity: 0.45; filter: blur(1.5px); }
+.slot-unit.pos-active { transform: translateY(170px) scale(1);    opacity: 1;    filter: blur(0);    font-size: 42px; }
+
+/* UPDATED: prev is more readable (less blur, less shrink, more opacity) */
+.slot-unit.pos-prev   { transform: translateY(330px) scale(0.92); opacity: 0.78; filter: blur(0.6px); }
+
+.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6);  opacity: 0; }
 
 .shake-active { animation: shake 0.3s; }
 @keyframes shake {
@@ -251,7 +252,7 @@ main {
 }
 
 /* ===================================================================== */
-/* MOBILE: keep as-is */
+/* MOBILE: keep as-is (only tune readability of prev word) */
 /* ===================================================================== */
 @media (max-width: 768px) {
 
@@ -298,9 +299,15 @@ main {
             0 4px 0 rgba(0,0,0,0.3);
     }
 
-    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
-    .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
-    .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); }
+    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.82); opacity: 0.45; filter: blur(1.5px); }
+    .slot-unit.pos-active { transform: translateY(140px) scale(1);    opacity: 1;    filter: blur(0);    font-size: 42px; }
+
+    /* UPDATED (mobile): prev readable AND stays inside 420px stage
+       word height 140, so Y must be <= 280.
+       250 + 140 = 390 <= 420 ✅
+    */
+    .slot-unit.pos-prev   { transform: translateY(250px) scale(0.92); opacity: 0.78; filter: blur(0.6px); }
+
     .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
 
     .shake-active { animation: shake-mobile 0.3s; }
@@ -312,11 +319,10 @@ main {
 }
 
 /* ===================================================================== */
-/* DESKTOP ONLY: fix scoreboard looking cramped/weird */
+/* DESKTOP ONLY: keep scoreboard nice */
 /* ===================================================================== */
 @media (min-width: 769px) {
 
-    /* Center header content a bit without changing HTML */
     header {
         padding-left: 0;
         padding-right: 0;
@@ -333,7 +339,6 @@ main {
         padding-top: 18px;
     }
 
-    /* Make HUD properly wide and readable (like your older version) */
     .game-hud {
         max-width: 720px;
         margin-left: auto;
@@ -347,7 +352,6 @@ main {
     .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
     .stat-item .value { font-size: 20px; }
 
-    /* Keep stage + buttons aligned as a column */
     .stage-wrapper { margin-top: 6px; margin-bottom: 14px; }
 
     .controls-area {
