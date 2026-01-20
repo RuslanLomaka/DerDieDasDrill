@@ -23,13 +23,15 @@
         </h2>
 
         <div class="controls-top">
-            <select class="level-select" id="levelSelector">
-                <option value="A1">Level A1</option>
-                <option value="A2">Level A2</option>
-                <option value="B1">Level B1</option>
-                <option value="B2">Level B2</option>
-                <option value="ALL">Mix All</option>
-            </select>
+            <!-- NEW: multi-select level chips -->
+            <div class="level-chips" id="levelChips" aria-label="Levels">
+                <button class="chip active" type="button" data-level="A1">A1</button>
+                <button class="chip" type="button" data-level="A2">A2</button>
+                <button class="chip" type="button" data-level="B1">B1</button>
+                <button class="chip" type="button" data-level="B2">B2</button>
+                <button class="chip" type="button" data-level="ALL">ALL</button>
+            </div>
+
             <button class="pill" id="resetBtn" onclick="location.reload()">Reset</button>
         </div>
     </div>
@@ -77,15 +79,20 @@ let isLock = false;
 let activeUnit = null;
 let prevUnit = null;
 
-const levelSelector = document.getElementById('levelSelector');
 const resetBtn = document.getElementById('resetBtn');
 
+/* =========================
+   UI TRANSLATIONS
+   ========================= */
 const ui = {
-    de: { streak: "Streak", score: "Score", words: "Words", reset: "Reset", level: "Level", mix: "Mix All" },
-    en: { streak: "Streak", score: "Score", words: "Words", reset: "Reset", level: "Level", mix: "Mix All" },
-    uk: { streak: "Серія", score: "Рахунок", words: "Слів", reset: "Скинути", level: "Рівень", mix: "Змішати" }
+    de: { streak: "Streak", score: "Score", words: "Words", reset: "Reset" },
+    en: { streak: "Streak", score: "Score", words: "Words", reset: "Reset" },
+    uk: { streak: "Серія", score: "Рахунок", words: "Слів", reset: "Скинути" }
 };
 
+/* =========================
+   LANGUAGE TOGGLE
+   ========================= */
 const langBtn = document.getElementById('langBtn');
 const LANGS = ["de", "en", "uk"];
 const LANG_FLAG = { de: "🇩🇪", en: "🇬🇧", uk: "🇺🇦" };
@@ -113,44 +120,41 @@ langBtn.addEventListener('touchstart', () => langBtn.classList.remove('is-dim'),
 
 function applyUiLang(lang) {
     const t = ui[lang] || ui.de;
-
     document.getElementById('labelStreak').textContent = t.streak;
     document.getElementById('labelScore').textContent  = t.score;
     document.getElementById('labelWords').textContent  = t.words;
     resetBtn.textContent = t.reset;
-
-    // Update select labels without changing values
-    [...levelSelector.options].forEach(opt => {
-        const v = opt.value;
-        if (v === "ALL") opt.textContent = t.mix;
-        else opt.textContent = `${t.level} ${v}`;
-    });
 }
 
-function getTranslationFor(item, lang) {
-    if (!item) return "";
-    if (lang === "de") return "";
-    return item.t?.[lang] || "";
+/* =========================
+   LEVEL CHIPS (multi-select)
+   ========================= */
+const levelChips = document.getElementById('levelChips');
+const chipButtons = [...levelChips.querySelectorAll('.chip')];
+const LEVELS = ["A1", "A2", "B1", "B2"];
+let selectedLevels = new Set(["A1"]);
+
+function setChipActive(level, isActive) {
+    const btn = chipButtons.find(b => b.dataset.level === level);
+    if (!btn) return;
+    btn.classList.toggle('active', isActive);
 }
 
-function refreshActiveTranslation() {
-    const lang = currentLang();
-    if (!activeUnit) return;
-    const data = activeWords[(currentIndex - 1) % activeWords.length];
-
-    const sub = activeUnit.querySelector('.sub-translation');
-    if (!sub) return;
-
-    const txt = getTranslationFor(data, lang);
-    sub.textContent = txt ? txt : "";
-    sub.style.display = (txt && lang !== "de") ? "block" : "none";
+function updateAllChipState() {
+    const allOn = LEVELS.every(l => selectedLevels.has(l));
+    setChipActive("ALL", allOn);
 }
 
-function loadLevel(level) {
-    if (level === "ALL") activeWords = [...rawData];
-    else activeWords = rawData.filter(item => item.l === level);
+function rebuildWordPool() {
+    // safety: never allow empty selection
+    if (selectedLevels.size === 0) {
+        selectedLevels.add("A1");
+        setChipActive("A1", true);
+    }
 
+    activeWords = rawData.filter(item => selectedLevels.has(item.l));
     document.getElementById('levelCount').innerText = activeWords.length;
+
     shuffle(activeWords);
     currentIndex = 0;
 
@@ -165,6 +169,69 @@ function loadLevel(level) {
     refreshActiveTranslation();
 }
 
+function onChipClick(level) {
+    if (level === "ALL") {
+        const allOn = LEVELS.every(l => selectedLevels.has(l));
+        if (!allOn) {
+            // turn all ON
+            LEVELS.forEach(l => {
+                selectedLevels.add(l);
+                setChipActive(l, true);
+            });
+        } else {
+            // turn all OFF -> keep A1 as safe default
+            selectedLevels = new Set(["A1"]);
+            LEVELS.forEach(l => setChipActive(l, l === "A1"));
+        }
+        updateAllChipState();
+        rebuildWordPool();
+        return;
+    }
+
+    // toggle one level
+    if (selectedLevels.has(level)) {
+        selectedLevels.delete(level);
+        setChipActive(level, false);
+    } else {
+        selectedLevels.add(level);
+        setChipActive(level, true);
+    }
+
+    updateAllChipState();
+    rebuildWordPool();
+}
+
+levelChips.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    onChipClick(btn.dataset.level);
+});
+
+/* =========================
+   TRANSLATION SUBTITLE
+   ========================= */
+function getTranslationFor(item, lang) {
+    if (!item) return "";
+    if (lang === "de") return "";
+    return item.t?.[lang] || "";
+}
+
+function refreshActiveTranslation() {
+    const lang = currentLang();
+    if (!activeUnit) return;
+
+    const data = activeWords[(currentIndex - 1) % activeWords.length];
+    const sub = activeUnit.querySelector('.sub-translation');
+    if (!sub) return;
+
+    const txt = getTranslationFor(data, lang);
+    sub.textContent = txt ? txt : "";
+    sub.style.display = (txt && lang !== "de") ? "block" : "none";
+}
+
+/* =========================
+   CORE GAME
+   ========================= */
 function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -189,7 +256,6 @@ function spawnWord(startPos) {
         activeUnit = unit;
         refreshActiveTranslation();
     } else {
-        // hide subtitle for non-active
         const sub = unit.querySelector('.sub-translation');
         if (sub) sub.style.display = "none";
     }
@@ -242,9 +308,7 @@ function handleChoice(choice) {
         currentIndex++;
         spawnWord("pos-next");
 
-        // update translation for the new active
         refreshActiveTranslation();
-
         isLock = false;
     }, 900);
 }
@@ -255,8 +319,6 @@ function updateScore() {
     document.getElementById('streak').innerText = stats.streak;
 }
 
-levelSelector.addEventListener('change', (e) => loadLevel(e.target.value));
-
 window.onkeydown = (e) => {
     const key = e.key.toLowerCase();
     if (key === 'a') handleChoice('der');
@@ -265,7 +327,7 @@ window.onkeydown = (e) => {
 };
 
 setLangIndex(0);
-loadLevel("A1");
+rebuildWordPool();
 updateScore();
 </script>
 </body>
