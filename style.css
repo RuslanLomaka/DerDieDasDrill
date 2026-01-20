@@ -120,31 +120,42 @@ header {
     color: var(--text);
 }
 
-/* --- MAIN CONTAINER --- */
+/* --- MAIN CONTAINER (grid so buttons never get pushed off-screen) --- */
 main {
     flex: 1;
-    display: flex;
-    flex-direction: column;
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
     padding: 10px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
     position: relative;
-    justify-content: flex-start;
+
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto; /* HUD | STAGE | BUTTONS */
+    gap: 10px;
+
+    /* leaves some room even when iOS shows bottom toolbar */
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    min-height: 0;
+}
+
+/* iOS WebKit (Chrome on iPhone) bottom toolbar is NOT safe-area.
+   This lifts controls so they stay fully visible. */
+@supports (-webkit-touch-callout: none) {
+    main {
+        padding-bottom: max(12px, env(safe-area-inset-bottom) + 64px);
+    }
 }
 
 /* 1. HUD */
 .game-hud {
-    flex: 0 0 50px;
     display: flex;
     justify-content: space-around;
     align-items: center;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    margin-bottom: 10px;
     padding: 0 10px;
+    height: 50px;
 }
 
 .stat-item { text-align: center; min-width: 90px; }
@@ -160,19 +171,18 @@ main {
     font-weight: 800;
 }
 
-/* 2. STAGE AREA */
+/* 2. STAGE AREA (fills the middle row) */
 .stage-wrapper {
-    flex: 0 0 auto;
+    min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    margin-bottom: 12px;
 }
 
 .stage {
     position: relative;
-    width: 320px;
+    width: min(320px, 92vw);
     height: 480px;
     background: #080c18;
     border-radius: 24px;
@@ -182,13 +192,14 @@ main {
     transform: scale(1);
 }
 
+/* fades should not cover too much on short stages */
 .stage::before,
 .stage::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    height: 100px;
+    height: 90px;
     z-index: 10;
     pointer-events: none;
 }
@@ -226,13 +237,22 @@ main {
     border-color: rgba(163, 169, 255, 0.55);
 }
 
-/* 3. CONTROLS */
+/* 3. CONTROLS (always in last row) */
 .controls-area {
-    flex: 0 0 90px;
     display: flex;
     gap: 8px;
     width: 100%;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    height: 90px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    align-items: stretch;
+}
+
+/* lift controls more on iPhone Chrome */
+@supports (-webkit-touch-callout: none) {
+    .controls-area {
+        padding-bottom: max(12px, env(safe-area-inset-bottom) + 64px);
+        height: 90px;
+    }
 }
 
 .btn {
@@ -269,6 +289,11 @@ main {
     padding: 0 18px;
     text-align: center;
     gap: 10px;
+}
+
+/* better readability on iPhone (text looked “black”) */
+.slot-unit.pos-active {
+    text-shadow: 0 10px 24px rgba(0,0,0,0.65);
 }
 
 /* IMPORTANT: article and word use SAME font sizing rules */
@@ -350,16 +375,6 @@ main {
     75% { transform: translateY(170px) translateX(10px); }
 }
 
-/* --- HEIGHT-BASED SCALING (kept) --- */
-@media (max-height: 750px) {
-    .stage { transform: scale(0.85); }
-}
-@media (max-height: 600px) {
-    .stage { transform: scale(0.7); }
-    .game-hud { flex-basis: 40px; }
-    .stat-item .value { font-size: 16px; }
-}
-
 /* ===================================================================== */
 /* MOBILE */
 /* ===================================================================== */
@@ -388,8 +403,16 @@ main {
         margin: 0;
     }
 
-    /* KEY FIX for iPhone: stage shrinks as needed so buttons always fit */
-    .stage { height: clamp(320px, 52dvh, 420px); }
+    /* KEY FIX: stage must shrink to fit on iPhone when browser UI eats height */
+    .stage {
+        height: clamp(280px, 44dvh, 420px);
+    }
+
+    /* reduce fade heights so stage doesn't look “all black” */
+    .stage::before,
+    .stage::after {
+        height: 70px;
+    }
 
     .lang-toggle {
         width: 32px;
@@ -403,6 +426,14 @@ main {
     .chip {
         padding: 5px 9px;
         font-size: 12px;
+    }
+
+    /* buttons slightly smaller on short mobile screens */
+    .controls-area { height: 78px; }
+
+    .btn {
+        font-size: 18px;
+        border-radius: 14px;
     }
 
     .btn.der {
@@ -426,15 +457,15 @@ main {
 
     /* keep slot positions consistent with shorter stage */
     .slot-unit.pos-next   { transform: translateY(10px)  scale(0.82); }
-    .slot-unit.pos-active { transform: translateY(140px) scale(1);    }
-    .slot-unit.pos-prev   { transform: translateY(250px) scale(0.92); }
-    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
+    .slot-unit.pos-active { transform: translateY(120px) scale(1);    }
+    .slot-unit.pos-prev   { transform: translateY(220px) scale(0.92); }
+    .slot-unit.pos-exit   { transform: translateY(420px) scale(0.65); opacity: 0; }
 
     .shake-active { animation: shake-mobile 0.3s; }
     @keyframes shake-mobile {
-        0%, 100% { transform: translateY(140px) translateX(0); }
-        25% { transform: translateY(140px) translateX(-10px); }
-        75% { transform: translateY(140px) translateX(10px); }
+        0%, 100% { transform: translateY(120px) translateX(0); }
+        25% { transform: translateY(120px) translateX(-10px); }
+        75% { transform: translateY(120px) translateX(10px); }
     }
 }
 
@@ -472,7 +503,6 @@ main {
         height: 56px;
         padding: 0 18px;
         border-radius: 14px;
-        margin-bottom: 14px;
     }
 
     .stat-item { min-width: 140px; }
@@ -481,7 +511,7 @@ main {
 
     .stage { width: var(--stage-w); }
 
-    .controls-area { gap: 14px; }
+    .controls-area { gap: 14px; height: 90px; }
     .btn {
         font-size: 22px;
         border-radius: 16px;
