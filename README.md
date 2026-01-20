@@ -30,8 +30,14 @@
 
 ## 🚀 How to Run
 
-1.  **Download** the files (`index.html`, `style.css`, `words.js`).
-2.  **Double-click `index.html`** to open it in any browser.
+**Play Online:**
+You don't need to install anything! The app is hosted live here:
+👉 **[Play Der Die Das Drill](https://ruslanlomaka.github.io/DerDieDasDrill/)**
+
+**Run Locally (For Developers):**
+If you want to modify the code or run it offline:
+1.  **Download** the repository files (`index.html`, `style.css`, `words.js`).
+2.  **Double-click `index.html`** to open it in any web browser.
 3.  Start the drill!
 
 ## 📄 License
