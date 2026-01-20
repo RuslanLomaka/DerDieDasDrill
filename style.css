@@ -1,4 +1,8 @@
-/* --- GLOBAL VARIABLES --- */
+/* --- ORIGINAL STYLES --- */
+.credits { font-size:11px; color:var(--muted); margin-top:6px; text-align:center; width:100%; }
+.credits a { color:var(--accent); text-decoration:none; opacity:0.8; transition:opacity .2s; }
+.credits a:hover { opacity:1; text-decoration:underline; }
+
 :root {
     --bg: #0b1020;
     --card: #12192d;
@@ -6,149 +10,135 @@
     --text: #e7ecff;
     --ok: #36c689;
     --bad: #ff6470;
-    --der: #4b8bff;
-    --die: #ff6cae;
-    --das: #ffd84b;
+    --der: #4b8bff;   
+    --die: #ff6cae;   
+    --das: #ffd84b;   
     --border: #24335c;
     --accent: #a3a9ff;
-    --header-h: 60px;
 }
 
 * { box-sizing: border-box; }
-
 body {
     margin: 0; font-family: system-ui, -apple-system, sans-serif;
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
-    height: 100vh; /* Fixed height for mobile app feel */
-    display: flex; flex-direction: column;
-    overflow: hidden; /* Prevent scrolling */
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    overflow-x: hidden;
 }
 
-/* --- HEADER --- */
-header {
-    flex: 0 0 var(--header-h);
-    width: 100%; padding: 0 15px;
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid var(--border);
-    background: rgba(11, 16, 32, 0.8);
-}
+header { width: 100%; max-width: 900px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+.controls-top { display: flex; gap: 10px; align-items: center; }
 
 .level-select {
     background: #1a2340; border: 1px solid var(--border); color: var(--accent);
-    padding: 6px 10px; border-radius: 8px; font-size: 14px; font-weight: bold;
-    max-width: 140px;
+    padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: bold;
+    cursor: pointer; outline: none;
 }
 
-.pill {
-    background: transparent; border: 1px solid var(--bad); color: var(--bad);
-    padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
-}
+.pill { background: #1a2340; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; }
 
-/* --- MAIN LAYOUT --- */
-main {
-    flex: 1; /* Takes remaining space */
-    display: flex; flex-direction: column;
-    position: relative;
-    width: 100%; max-width: 600px;
-    margin: 0 auto;
-    padding: 10px;
-}
-
-/* 1. HUD (Stats Bar) */
-.game-hud {
-    flex: 0 0 50px;
-    display: flex; justify-content: space-around; align-items: center;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; margin-bottom: 10px;
-}
-
-.stat-item { text-align: center; }
-.stat-item .label { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.stat-item .value { font-size: 18px; font-weight: 800; }
-
-/* 2. STAGE (The Slot) */
-.stage-wrapper {
-    flex: 1; /* Grow to fill space */
-    display: flex; justify-content: center; align-items: center;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
+main { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 20px; }
 
 .stage {
     position: relative;
-    /* We lock the size here to match JS animations, 
-       then scale it down using CSS transform for mobile */
-    width: 100%; max-width: 400px;
-    height: 480px; 
+    height: 520px;
     background: #080c18;
-    border-radius: 20px;
+    border-radius: 32px;
     border: 3px solid var(--border);
-    box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
     overflow: hidden;
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
 }
 
-/* Gradient Fade for Reel */
 .stage::before, .stage::after {
-    content: ""; position: absolute; left: 0; right: 0; height: 100px; z-index: 10; pointer-events: none;
+    content: ""; position: absolute; left: 0; right: 0; height: 120px; z-index: 10; pointer-events: none;
 }
 .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
 .stage::after { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
-/* 3. BUTTONS */
-.controls-area {
-    flex: 0 0 80px; /* Fixed height for button area */
-    display: flex; gap: 10px; width: 100%;
-}
-.btn {
-    flex: 1; border-radius: 16px; border: none;
-    font-size: 20px; font-weight: 800; color: #fff;
-    cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-    transition: transform 0.1s;
-}
-.btn:active { transform: translateY(4px); box-shadow: none; }
-.btn.der { background: var(--der); }
-.btn.die { background: var(--die); }
-.btn.das { background: var(--das); }
+.reel-container { position: relative; width: 100%; height: 100%; }
 
-/* --- SLOT ANIMATION LOGIC --- */
 .slot-unit {
-    position: absolute; left: 0; right: 0; height: 140px;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute;
+    left: 0; right: 0; height: 140px;
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
     transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     font-weight: 800;
 }
-.article-reveal {
-    opacity: 0; max-width: 0; overflow: hidden; white-space: nowrap; 
-    transition: 0.3s; margin-right: 0; display: inline-block;
-}
-.resolved .article-reveal { opacity: 1; max-width: 100px; margin-right: 10px; }
 
-/* Animation States */
-.slot-unit.pos-next { transform: translateY(20px) scale(0.8); opacity: 0.4; filter: blur(2px); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1); opacity: 1; filter: blur(0); font-size: 42px; }
-.slot-unit.pos-prev { transform: translateY(340px) scale(0.8); opacity: 0.5; filter: blur(2px); }
-.slot-unit.pos-exit { transform: translateY(500px) scale(0.6); opacity: 0; }
-
-.shake-active { animation: shake 0.3s; }
 @keyframes shake {
-    0%, 100% { transform: translateY(170px) translateX(0); }
-    25% { transform: translateY(170px) translateX(-10px); }
-    75% { transform: translateY(170px) translateX(10px); }
+    0%, 100% { transform: translateY(190px) translateX(0); }
+    20%, 60% { transform: translateY(190px) translateX(-15px); }
+    40%, 80% { transform: translateY(190px) translateX(15px); }
+}
+.shake-active { animation: shake 0.3s ease-in-out; }
+
+.slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(1.5px) brightness(0.5); opacity: 0.5; }
+.slot-unit.pos-active { transform: translateY(190px) scale(1); filter: blur(0) brightness(1); opacity: 1; font-size: 52px; }
+.slot-unit.pos-prev { transform: translateY(360px) scale(0.95); filter: blur(1.5px) brightness(0.7); opacity: 0.7; font-size: 40px; }
+.slot-unit.pos-exit { transform: translateY(550px) scale(0.8); opacity: 0; filter: blur(4px); }
+
+.article-reveal {
+    opacity: 0; max-width: 0; display: inline-block; overflow: hidden;
+    transition: opacity 0.3s ease, max-width 0.4s ease; white-space: nowrap; margin-right: 0; font-size: inherit;
 }
 
-.credits {
-    position: fixed; bottom: 2px; right: 5px; font-size: 8px; color: #333; z-index: 999;
+.resolved .article-reveal { opacity: 1; max-width: 250px; margin-right: 15px; }
+
+.controls-area { margin-top: 30px; text-align: center; }
+.btnrow { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+.btn {
+    flex: 1; max-width: 120px; padding: 18px; border-radius: 20px; 
+    border: 3px solid var(--border); background: #172142; color: #fff; 
+    font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.2s;
 }
-.credits a { color: #444; text-decoration: none; }
+.btn.der:hover { border-color: var(--der); box-shadow: 0 0 15px var(--der); }
+.btn.die:hover { border-color: var(--die); box-shadow: 0 0 15px var(--die); }
+.btn.das:hover { border-color: var(--das); box-shadow: 0 0 15px var(--das); }
+
+.stat-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 12px; }
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.stat-value { font-size: 28px; font-weight: 800; margin-top: 5px; }
 
 /* --- MOBILE OPTIMIZATION --- */
-@media (max-height: 700px) {
-    /* If screen is short, scale the slot machine down to fit */
-    .stage {
-        transform: scale(0.85);
-        transform-origin: center center;
-        border-width: 2px;
+@media (max-width: 800px) {
+    /* Prevent page scrolling */
+    body { height: 100vh; overflow: hidden; } 
+    
+    main { 
+        /* Switch grid to vertical flex */
+        display: flex; flex-direction: column; 
+        padding: 10px; height: calc(100vh - 80px); 
+        gap: 0; overflow: hidden; 
     }
-    .header h2 { font-size: 18px; }
+
+    /* Scale the stage down to fit smaller screens without breaking JS */
+    .stage {
+        transform: scale(0.7); 
+        transform-origin: top center;
+        margin-bottom: -150px; /* Compensate for the empty space left by scaling */
+        width: 100%;
+    }
+
+    /* Move stats to bottom in a row */
+    aside { 
+        display: flex; flex-direction: row; gap: 5px; width: 100%; 
+        order: 2; /* Force to bottom */
+    }
+    .stat-box { 
+        flex: 1; padding: 8px; margin: 0; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    }
+    .stat-value { font-size: 16px; margin: 0; }
+    .stat-label { font-size: 9px; }
+
+    /* Controls */
+    section { order: 1; width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .controls-area { margin-top: 0; width: 100%; margin-bottom: 10px; }
+    .btn { padding: 15px; font-size: 16px; }
+    
+    /* Smaller Header */
+    header { padding: 10px; }
+    h2 { font-size: 18px; }
+    .level-select { font-size: 11px; padding: 4px; }
 }
