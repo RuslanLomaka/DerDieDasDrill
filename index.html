@@ -1,612 +1,330 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Der/Die/Das Trainer</title>
-  <style>
-    :root{
-      --bg:#0b1020;
-      --card:#12192d;
-      --muted:#9aa6c4;
-      --text:#e7ecff;
-      --ok:#36c689;
-      --bad:#ff6470;
-      --der:#4b8bff;   /* blue */
-      --die:#ff6cae;   /* pink */
-      --das:#8bd8a5;   /* green */
-      --accent:#a3a9ff;
-      --border:#24335c;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;
-      background:linear-gradient(180deg, #0b1020 0%, #0e1428 100%);
-      color:var(--text);
-      min-height:100dvh; display:flex; flex-direction:column; align-items:center;
-    }
-    
-    /* NEW STYLES FOR THE CREDIT LINE */
-    .credits { 
-        font-size:12px; 
-        color:var(--muted); 
-        margin-top:8px; 
-        margin-bottom:4px;
-        text-align:center; 
-        width:100%; 
-        opacity: 0.8;
-    }
-    .credits a { 
-        color:var(--accent); 
-        text-decoration:none; 
-        transition:opacity .2s; 
-    }
-    .credits a:hover { 
-        opacity:1; 
-        text-decoration:underline; 
-    }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Slot Deutsch - Ultimate Edition</title>
+    <style>
+        :root {
+            --bg: #0b1020;
+            --card: #12192d;
+            --muted: #a0aec0;
+            --text: #e7ecff;
+            --ok: #36c689;
+            --bad: #ff6470;
+            --der: #4b8bff;   /* Blue */
+            --die: #ff6cae;   /* Pink */
+            --das: #ffd84b;   /* Yellow */
+            --border: #24335c;
+            --accent: #a3a9ff;
+        }
 
-    header{
-      width:100%; max-width:980px; padding:16px 20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;
-    }
-    header h1{font-size:18px; letter-spacing:.4px; margin:0; color:var(--accent)}
-    .controls{display:flex; gap:8px; flex-wrap:wrap}
-    .pill{background:#1a2340; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:999px; font-size:14px; cursor:pointer}
-    .pill[aria-pressed="true"]{outline:2px solid var(--accent)}
-    .select{background:#1a2340; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px}
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; font-family: system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
+            color: var(--text);
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            overflow: hidden;
+        }
 
-    main{width:100%; max-width:980px; padding:12px 20px; display:grid; gap:16px}
-    .grid{ display:grid; gap:16px; grid-template-columns:1fr; align-items:start; }
-    @media (min-width:800px){ .grid{ grid-template-columns: 1.2fr .8fr; } }
+        header { width: 100%; max-width: 900px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .controls-top { display: flex; gap: 10px; align-items: center; }
+        
+        .level-select {
+            background: #1a2340; border: 1px solid var(--border); color: var(--accent);
+            padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: bold;
+            cursor: pointer; outline: none;
+        }
 
-    .card{
-      background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25);
-    }
+        .pill { background: #1a2340; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; }
+        
+        main { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 20px; }
+        @media (max-width: 800px) { main { grid-template-columns: 1fr; overflow-y: auto; } }
 
-    .word{
-      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:180px; text-align:center;
-    }
-    .big{ font-size:44px; font-weight:800; letter-spacing:.5px }
-    .sub{ color:var(--muted); font-size:14px }
+        .stage {
+            position: relative;
+            height: 520px;
+            background: #080c18;
+            border-radius: 32px;
+            border: 3px solid var(--border);
+            overflow: hidden;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
+        }
 
-    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-    .btn{
-      flex:1 1 120px; min-width:120px; padding:14px 16px; border-radius:14px; border:2px solid var(--border); background:#172142; color:var(--text); font-weight:800; cursor:pointer; transition:transform .04s ease, border-color .2s ease;
-    }
-    .btn:active{ transform:translateY(1px) }
-    .der{ border-color: var(--der); }
-    .die{ border-color: var(--die); }
-    .das{ border-color: var(--das); }
+        .stage::before, .stage::after {
+            content: ""; position: absolute; left: 0; right: 0; height: 120px; z-index: 10; pointer-events: none;
+        }
+        .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
+        .stage::after { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
-    .feedback{ min-height:58px; display:flex; align-items:center; justify-content:center; text-align:center; border-radius:14px; padding:10px; background:#111936; border:1px dashed var(--border) }
-    .ok{ color:var(--ok) }
-    .bad{ color:var(--bad) }
+        .reel-container { position: relative; width: 100%; height: 100%; }
 
-    .stats{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px }
-    .stat{ background:#101733; border:1px solid var(--border); border-radius:12px; padding:10px 12px }
-    .stat h3{ margin:0; font-size:12px; color:var(--muted); font-weight:600 }
-    .stat p{ margin:6px 0 0 0; font-size:20px; font-weight:800 }
+        .slot-unit {
+            position: absolute;
+            left: 0; right: 0; height: 140px;
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            font-weight: 800;
+        }
 
-    .list li{ padding:4px 0; color:var(--muted) }
-    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:2px 6px; border:1px solid var(--border); border-radius:6px; background:#0d1430 }
+        @keyframes shake {
+            0%, 100% { transform: translateY(190px) translateX(0); }
+            20%, 60% { transform: translateY(190px) translateX(-15px); }
+            40%, 80% { transform: translateY(190px) translateX(15px); }
+        }
+        .shake-active { animation: shake 0.3s ease-in-out; }
 
-    dialog{ background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:14px; padding:16px; width:min(560px, 92vw) }
-    dialog::backdrop{ background:rgba(0,0,0,.6) }
-    form.row{ display:grid; grid-template-columns:1fr 110px 1fr; gap:8px; align-items:end }
-    label{ font-size:12px; color:var(--muted) }
-    input, select{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#0e1632; color:var(--text) }
-    .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:10px }
-    .small{ font-size:12px; color:var(--muted) }
-  </style>
+        .slot-unit.pos-next { transform: translateY(20px) scale(0.95); filter: blur(1.5px) brightness(0.5); opacity: 0.5; }
+        .slot-unit.pos-active { transform: translateY(190px) scale(1); filter: blur(0) brightness(1); opacity: 1; font-size: 52px; }
+        .slot-unit.pos-prev { transform: translateY(360px) scale(0.95); filter: blur(1.5px) brightness(0.7); opacity: 0.7; font-size: 40px; }
+        .slot-unit.pos-exit { transform: translateY(550px) scale(0.8); opacity: 0; filter: blur(4px); }
+
+        .article-reveal {
+            opacity: 0; max-width: 0; display: inline-block; overflow: hidden;
+            transition: opacity 0.3s ease, max-width 0.4s ease; white-space: nowrap; margin-right: 0; font-size: inherit;
+        }
+
+        .resolved .article-reveal { opacity: 1; max-width: 250px; margin-right: 15px; }
+
+        .controls-area { margin-top: 30px; text-align: center; }
+        .btnrow { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+        .btn {
+            flex: 1; max-width: 120px; padding: 18px; border-radius: 20px; 
+            border: 3px solid var(--border); background: #172142; color: #fff; 
+            font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.2s;
+        }
+        .btn.der:hover { border-color: var(--der); box-shadow: 0 0 15px var(--der); }
+        .btn.die:hover { border-color: var(--die); box-shadow: 0 0 15px var(--die); }
+        .btn.das:hover { border-color: var(--das); box-shadow: 0 0 15px var(--das); }
+
+        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 12px; }
+        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+        .stat-value { font-size: 28px; font-weight: 800; margin-top: 5px; }
+    </style>
 </head>
 <body>
 
-  <div class="credits">
-    Created by Ruslan Lomaka &nbsp;|&nbsp; 
-    <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank">LinkedIn</a> &nbsp;|&nbsp; 
-    <a href="https://github.com/RuslanLomaka/DerDieDasDrill" target="_blank">GitHub Repo</a>
-  </div>
-
-  <header>
-    <h1>Der/Die/Das Trainer</h1>
-    <div class="controls">
-      <button class="pill" id="modeBtn" aria-pressed="false" title="Tutor-Mode: zweite Chance & Hinweise">Tutor-Mode</button>
-      <button class="pill" id="hintBtn" aria-pressed="true" title="Zeige Hinweis zu typischen Endungen">Hinweis an</button>
-      <button class="pill" id="transBtn" aria-pressed="false" title="Übersetzung ein/aus">Übersetzung aus</button>
-      <button class="pill" id="shuffleBtn" title="Neue Reihenfolge">Shuffle</button>
-      <button class="pill" id="addBtn" title="Eigenes Wort hinzufügen">+ Wort</button>
-      <button class="pill" id="resetBtn" title="Statistiken zurücksetzen">Reset</button>
+<header>
+    <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
+    <div class="controls-top">
+        <select class="level-select" id="levelSelector">
+            <option value="A1">Level A1 (Basic)</option>
+            <option value="A2">Level A2 (Daily)</option>
+            <option value="B1">Level B1 (Interm.)</option>
+            <option value="B2">Level B2 (Pro)</option>
+            <option value="ALL">Mix All</option>
+        </select>
+        <button class="pill" onclick="location.reload()">Reset</button>
     </div>
-  </header>
+</header>
 
-  <main class="grid">
-    <section class="card">
-      <div class="word">
-        <div class="big" id="currentWord">—</div>
-        <div class="sub" id="translation"></div>
-      </div>
-      <div class="btnrow">
-        <button class="btn der" data-choice="der"><span class="kbd">A</span> der</button>
-        <button class="btn die" data-choice="die"><span class="kbd">S</span> die</button>
-        <button class="btn das" data-choice="das"><span class="kbd">D</span> das</button>
-      </div>
-      <div id="feedback" class="feedback sub">Wähle den richtigen Artikel.</div>
+<main>
+    <section>
+        <div class="stage">
+            <div id="reel" class="reel-container"></div>
+        </div>
+        <div class="controls-area">
+            <div class="btnrow">
+                <button class="btn der" onclick="handleChoice('der')">der</button>
+                <button class="btn die" onclick="handleChoice('die')">die</button>
+                <button class="btn das" onclick="handleChoice('das')">das</button>
+            </div>
+        </div>
     </section>
 
-    <aside class="card">
-      <div class="stats">
-        <div class="stat"><h3>Richtig</h3><p id="right">0</p></div>
-        <div class="stat"><h3>Falsch</h3><p id="wrong">0</p></div>
-        <div class="stat"><h3>Streak</h3><p id="streak">0</p></div>
-      </div>
-      <ul class="list" id="rules" style="margin-top:12px">
-        <li><b>Tipps:</b> −ung/−heit/−keit/−schaft/−ion/−tät → meist <b>die</b></li>
-        <li>−chen/−lein → fast immer <b>das</b></li>
-        <li>Ge-…-e & substantivierte Verben → oft <b>das</b></li>
-        <li>−er/−ling/−ig/−ismus → häufig <b>der</b></li>
-      </ul>
-      <div class="small" style="margin-top:10px">Shortcuts: <span class="kbd">A</span>=der, <span class="kbd">S</span>=die, <span class="kbd">D</span>=das, <span class="kbd">N</span>=nächste, <span class="kbd">H</span>=Hinweis an/aus, <span class="kbd">T</span>=Übersetzung</div>
-      <div class="small" style="margin-top:8px">Deine Wörter bleiben lokal (localStorage) gespeichert.</div>
+    <aside>
+        <div class="stat-box">
+            <div class="stat-label">Richtig / Falsch</div>
+            <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
+        </div>
+        <div class="stat-box" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
+            <b style="color:var(--text)">Vokabeln im Deck:</b><br>
+            <span id="levelCount">0</span> Wörter geladen.
+        </div>
     </aside>
-  </main>
+</main>
 
-  <section class="card" style="width:100%; max-width:980px; margin:12px 20px;">
-    <details open>
-      <summary><b>Wortliste (10 Starter – du kannst mehr hinzufügen)</b></summary>
-      <ol id="wordList" style="margin-top:8px"></ol>
-    </details>
-  </section>
+<script>
+const rawData = [
+    // --- LEVEL A1 (Basic Objects, Body, Family, Food) ---
+    {w:"Apfel", a:"der", l:"A1"}, {w:"Auto", a:"das", l:"A1"}, {w:"Brot", a:"das", l:"A1"}, 
+    {w:"Kind", a:"das", l:"A1"}, {w:"Mann", a:"der", l:"A1"}, {w:"Frau", a:"die", l:"A1"}, 
+    {w:"Haus", a:"das", l:"A1"}, {w:"Schule", a:"die", l:"A1"}, {w:"Tisch", a:"der", l:"A1"}, 
+    {w:"Wasser", a:"das", l:"A1"}, {w:"Name", a:"der", l:"A1"}, {w:"Tag", a:"der", l:"A1"}, 
+    {w:"Nacht", a:"die", l:"A1"}, {w:"Stadt", a:"die", l:"A1"}, {w:"Land", a:"das", l:"A1"},
+    {w:"Buch", a:"das", l:"A1"}, {w:"Stift", a:"der", l:"A1"}, {w:"Stuhl", a:"der", l:"A1"},
+    {w:"Fenster", a:"das", l:"A1"}, {w:"Tür", a:"die", l:"A1"}, {w:"Hand", a:"die", l:"A1"},
+    {w:"Fuß", a:"der", l:"A1"}, {w:"Kopf", a:"der", l:"A1"}, {w:"Auge", a:"das", l:"A1"},
+    {w:"Mund", a:"der", l:"A1"}, {w:"Nase", a:"die", l:"A1"}, {w:"Ohr", a:"das", l:"A1"},
+    {w:"Vater", a:"der", l:"A1"}, {w:"Mutter", a:"die", l:"A1"}, {w:"Bruder", a:"der", l:"A1"},
+    {w:"Schwester", a:"die", l:"A1"}, {w:"Freund", a:"der", l:"A1"}, {w:"Freundin", a:"die", l:"A1"},
+    {w:"Milch", a:"die", l:"A1"}, {w:"Käse", a:"der", l:"A1"}, {w:"Ei", a:"das", l:"A1"},
+    {w:"Geld", a:"das", l:"A1"}, {w:"Bus", a:"der", l:"A1"}, {w:"Zug", a:"der", l:"A1"},
+    {w:"Bett", a:"das", l:"A1"}, {w:"Zimmer", a:"das", l:"A1"}, {w:"Woche", a:"die", l:"A1"},
+    {w:"Jahr", a:"das", l:"A1"}, {w:"Uhr", a:"die", l:"A1"}, {w:"Tasche", a:"die", l:"A1"},
 
-  <dialog id="addDialog">
-    <h3 style="margin-top:0">Eigenes Wort hinzufügen</h3>
-    <form class="row" id="addForm">
-      <div>
-        <label>Substantiv (groß)</label>
-        <input id="wWord" placeholder="Universität" required />
-      </div>
-      <div>
-        <label>Artikel</label>
-        <select id="wArt" required>
-          <option value="der">der</option>
-          <option value="die">die</option>
-          <option value="das">das</option>
-        </select>
-      </div>
-      <div>
-        <label>Übersetzung (optional)</label>
-        <input id="wTrans" placeholder="university" />
-      </div>
-      <div class="modal-actions" style="grid-column:1/-1">
-        <button type="button" class="pill" id="cancelAdd">Abbrechen</button>
-        <button class="pill" type="submit">Hinzufügen</button>
-      </div>
-    </form>
-  </dialog>
+    // --- LEVEL A2 (Travel, Work, Shopping, Nature, Housing) ---
+    {w:"Bahnhof", a:"der", l:"A2"}, {w:"Beruf", a:"der", l:"A2"}, {w:"Essen", a:"das", l:"A2"}, 
+    {w:"Frage", a:"die", l:"A2"}, {w:"Hilfe", a:"die", l:"A2"}, {w:"Kleidung", a:"die", l:"A2"}, 
+    {w:"Reise", a:"die", l:"A2"}, {w:"Urlaub", a:"der", l:"A2"}, {w:"Zeitung", a:"die", l:"A2"}, 
+    {w:"Arbeit", a:"die", l:"A2"}, {w:"Fahrrad", a:"das", l:"A2"}, {w:"Kaffee", a:"der", l:"A2"}, 
+    {w:"Küche", a:"die", l:"A2"}, {w:"Pass", a:"der", l:"A2"}, {w:"Koffer", a:"der", l:"A2"},
+    {w:"Flug", a:"der", l:"A2"}, {w:"Ticket", a:"das", l:"A2"}, {w:"Hotel", a:"das", l:"A2"},
+    {w:"Chef", a:"der", l:"A2"}, {w:"Kollege", a:"der", l:"A2"}, {w:"Firma", a:"die", l:"A2"},
+    {w:"Büro", a:"das", l:"A2"}, {w:"Baum", a:"der", l:"A2"}, {w:"Blume", a:"die", l:"A2"},
+    {w:"Wald", a:"der", l:"A2"}, {w:"Meer", a:"das", l:"A2"}, {w:"See", a:"der", l:"A2"},
+    {w:"Berg", a:"der", l:"A2"}, {w:"Wetter", a:"das", l:"A2"}, {w:"Regen", a:"der", l:"A2"},
+    {w:"Sonne", a:"die", l:"A2"}, {w:"Wind", a:"der", l:"A2"}, {w:"Schnee", a:"der", l:"A2"},
+    {w:"Wohnung", a:"die", l:"A2"}, {w:"Schlüssel", a:"der", l:"A2"}, {w:"Garten", a:"der", l:"A2"},
+    {w:"Balkon", a:"der", l:"A2"}, {w:"Rechnung", a:"die", l:"A2"}, {w:"Preis", a:"der", l:"A2"},
+    {w:"Supermarkt", a:"der", l:"A2"}, {w:"Arzt", a:"der", l:"A2"}, {w:"Termin", a:"der", l:"A2"},
+    {w:"Reparatur", a:"die", l:"A2"}, {w:"Ausbildung", a:"die", l:"A2"}, {w:"Unterricht", a:"der", l:"A2"},
 
-  <script>
-const defaultWords = [
-  {word:"Adresse", article:"die", translation:"address"},
-  {word:"Angst", article:"die", translation:"fear"},
-  {word:"Anzug", article:"der", translation:"suit"},
-  {word:"Apfel", article:"der", translation:"apple"},
-  {word:"Arbeit", article:"die", translation:"work"},
-  {word:"Arbeitnehmer", article:"der", translation:"employee"},
-  {word:"Arbeitstag", article:"der", translation:"workday"},
-  {word:"Armee", article:"die", translation:"army"},
-  {word:"Arzt", article:"der", translation:"doctor"},
-  {word:"Arztpraxis", article:"die", translation:"doctor’s office"},
-  {word:"Auto", article:"das", translation:"car"},
-  {word:"Auge", article:"das", translation:"eye"},
-  {word:"Bahnhof", article:"der", translation:"train station"},
-  {word:"Ball", article:"der", translation:"ball"},
-  {word:"Banane", article:"die", translation:"banana"},
-  {word:"Bank", article:"die", translation:"bank"},
-  {word:"Bau", article:"der", translation:"building"},
-  {word:"Baum", article:"der", translation:"tree"},
-  {word:"Berg", article:"der", translation:"mountain"},
-  {word:"Bett", article:"das", translation:"bed"},
-  {word:"Bild", article:"das", translation:"picture"},
-  {word:"Bildung", article:"die", translation:"education"},
-  {word:"Biene", article:"die", translation:"bee"},
-  {word:"Bier", article:"das", translation:"beer"},
-  {word:"Bibliothek", article:"die", translation:"library"},
-  {word:"Blume", article:"die", translation:"flower"},
-  {word:"Bleistift", article:"der", translation:"pencil"},
-  {word:"Brief", article:"der", translation:"letter"},
-  {word:"Briefkasten", article:"der", translation:"mailbox"},
-  {word:"Brot", article:"das", translation:"bread"},
-  {word:"Bus", article:"der", translation:"bus"},
-  {word:"Computer", article:"der", translation:"computer"},
-  {word:"Computerprogramm", article:"das", translation:"computer program"},
-  {word:"Dorf", article:"das", translation:"village"},
-  {word:"Diskussion", article:"die", translation:"discussion"},
-  {word:"Ei", article:"das", translation:"egg"},
-  {word:"Eltern", article:"die", translation:"parents"},
-  {word:"Email", article:"die", translation:"email"},
-  {word:"Entscheidung", article:"die", translation:"decision"},
-  {word:"Erde", article:"die", translation:"earth"},
-  {word:"Erfahrung", article:"die", translation:"experience"},
-  {word:"Erfolg", article:"der", translation:"success"},
-  {word:"Euro", article:"der", translation:"euro"},
-  {word:"Familie", article:"die", translation:"family"},
-  {word:"Fehler", article:"der", translation:"mistake"},
-  {word:"Feier", article:"die", translation:"celebration"},
-  {word:"Feiertag", article:"der", translation:"holiday"},
-  {word:"Ferien", article:"die", translation:"vacation"},
-  {word:"Fest", article:"das", translation:"festival"},
-  {word:"Fenster", article:"das", translation:"window"},
-  {word:"Film", article:"der", translation:"film"},
-  {word:"Firma", article:"die", translation:"company"},
-  {word:"Fisch", article:"der", translation:"fish"},
-  {word:"Flughafen", article:"der", translation:"airport"},
-  {word:"Flugzeug", article:"das", translation:"airplane"},
-  {word:"Foto", article:"das", translation:"photo"},
-  {word:"Frage", article:"die", translation:"question"},
-  {word:"Frau", article:"die", translation:"woman"},
-  {word:"Freizeit", article:"die", translation:"free time"},
-  {word:"Freund", article:"der", translation:"friend (male)"},
-  {word:"Freundin", article:"die", translation:"friend (female)"},
-  {word:"Frühjahr", article:"das", translation:"spring"},
-  {word:"Frühstück", article:"das", translation:"breakfast"},
-  {word:"Fußball", article:"der", translation:"football"},
-  {word:"Fußballspiel", article:"das", translation:"football match"},
-  {word:"Garten", article:"der", translation:"garden"},
-  {word:"Geburtstag", article:"der", translation:"birthday"},
-  {word:"Gefühl", article:"das", translation:"feeling"},
-  {word:"Geld", article:"das", translation:"money"},
-  {word:"Geschenk", article:"das", translation:"gift"},
-  {word:"Gesetz", article:"das", translation:"law"},
-  {word:"Gesicht", article:"das", translation:"face"},
-  {word:"Geschichte", article:"die", translation:"history"},
-  {word:"Gesellschaft", article:"die", translation:"society"},
-  {word:"Gesundheit", article:"die", translation:"health"},
-  {word:"Glück", article:"das", translation:"luck/happiness"},
-  {word:"Gott", article:"der", translation:"god"},
-  {word:"Grenze", article:"die", translation:"border"},
-  {word:"Hand", article:"die", translation:"hand"},
-  {word:"Handy", article:"das", translation:"mobile phone"},
-  {word:"Haus", article:"das", translation:"house"},
-  {word:"Hass", article:"der", translation:"hate"},
-  {word:"Heft", article:"das", translation:"notebook"},
-  {word:"Herbst", article:"der", translation:"autumn"},
-  {word:"Herz", article:"das", translation:"heart"},
-  {word:"Himmel", article:"der", translation:"sky"},
-  {word:"Himmelreich", article:"das", translation:"heaven"},
-  {word:"Hobby", article:"das", translation:"hobby"},
-  {word:"Honig", article:"der", translation:"honey"},
-  {word:"Hotel", article:"das", translation:"hotel"},
-  {word:"Huhn", article:"das", translation:"chicken"},
-  {word:"Hund", article:"der", translation:"dog"},
-  {word:"Hut", article:"der", translation:"hat"},
-  {word:"Idee", article:"die", translation:"idea"},
-  {word:"Interesse", article:"das", translation:"interest"},
-  {word:"Jacke", article:"die", translation:"jacket"},
-  {word:"Jahr", article:"das", translation:"year"},
-  {word:"Kaffee", article:"der", translation:"coffee"},
-  {word:"Karte", article:"die", translation:"card/map"},
-  {word:"Kartoffel", article:"die", translation:"potato"},
-  {word:"Katze", article:"die", translation:"cat"},
-  {word:"Käse", article:"der", translation:"cheese"},
-  {word:"Kind", article:"das", translation:"child"},
-  {word:"Kindergarten", article:"der", translation:"kindergarten"},
-  {word:"Kirche", article:"die", translation:"church"},
-  {word:"Kleid", article:"das", translation:"dress"},
-  {word:"Kleidung", article:"die", translation:"clothing"},
-  {word:"Klasse", article:"die", translation:"class"},
-  {word:"Koffer", article:"der", translation:"suitcase"},
-  {word:"Kohle", article:"die", translation:"coal"},
-  {word:"Kopf", article:"der", translation:"head"},
-  {word:"Konto", article:"das", translation:"account"},
-  {word:"Krankenhaus", article:"das", translation:"hospital"},
-  {word:"Krankenversicherung", article:"die", translation:"health insurance"},
-  {word:"Krieg", article:"der", translation:"war"},
-  {word:"Kuh", article:"die", translation:"cow"},
-  {word:"Kultur", article:"die", translation:"culture"},
-  {word:"Kunst", article:"die", translation:"art"},
-  {word:"Lampe", article:"die", translation:"lamp"},
-  {word:"Land", article:"das", translation:"country"},
-  {word:"Laden", article:"der", translation:"shop"},
-  {word:"Liebe", article:"die", translation:"love"},
-  {word:"Lied", article:"das", translation:"song"},
-  {word:"Lösung", article:"die", translation:"solution"},
-  {word:"Mann", article:"der", translation:"man"},
-  {word:"Mannschaft", article:"die", translation:"team"},
-  {word:"Mantel", article:"der", translation:"coat"},
-  {word:"Markt", article:"der", translation:"market"},
-  {word:"Meer", article:"das", translation:"sea"},
-  {word:"Meinung", article:"die", translation:"opinion"},
-  {word:"Menschen", article:"die", translation:"people"},
-  {word:"Milch", article:"die", translation:"milk"},
-  {word:"Mittagessen", article:"das", translation:"lunch"},
-  {word:"Mond", article:"der", translation:"moon"},
-  {word:"Mund", article:"der", translation:"mouth"},
-  {word:"Musik", article:"die", translation:"music"},
-  {word:"Mütze", article:"die", translation:"cap"},
-  {word:"Name", article:"der", translation:"name"},
-  {word:"Nachname", article:"der", translation:"surname"},
-  {word:"Nachricht", article:"die", translation:"message"},
-  {word:"Note", article:"die", translation:"grade/mark"},
-  {word:"Notfall", article:"der", translation:"emergency"},
-  {word:"Obst", article:"das", translation:"fruit"},
-  {word:"Ostern", article:"das", translation:"Easter"},
-  {word:"Orange", article:"die", translation:"orange"},
-  {word:"Papier", article:"das", translation:"paper"},
-  {word:"Partei", article:"die", translation:"party"},
-  {word:"Pass", article:"der", translation:"passport"},
-  {word:"Paket", article:"das", translation:"package"},
-  {word:"Pferd", article:"das", translation:"horse"},
-  {word:"Plan", article:"der", translation:"plan"},
-  {word:"Platz", article:"der", translation:"place"},
-  {word:"Polizei", article:"die", translation:"police"},
-  {word:"Politik", article:"die", translation:"politics"},
-  {word:"Post", article:"die", translation:"post"},
-  {word:"Preis", article:"der", translation:"price"},
-  {word:"Problem", article:"das", translation:"problem"},
-  {word:"Professor", article:"der", translation:"professor"},
-  {word:"Projekt", article:"das", translation:"project"},
-  {word:"Prüfung", article:"die", translation:"exam"},
-  {word:"Rechnung", article:"die", translation:"bill"},
-  {word:"Regen", article:"der", translation:"rain"},
-  {word:"Regierung", article:"die", translation:"government"},
-  {word:"Reis", article:"der", translation:"rice"},
-  {word:"Reisepass", article:"der", translation:"travel passport"},
-  {word:"Reise", article:"die", translation:"trip/journey"},
-  {word:"Restaurant", article:"das", translation:"restaurant"},
-  {word:"Rock", article:"der", translation:"skirt"},
-  {word:"Sala", article:"der", translation:"room"},
-  {word:"Salz", article:"das", translation:"salt"},
-  {word:"Schnee", article:"der", translation:"snow"},
-  {word:"Schlüssel", article:"der", translation:"key"},
-  {word:"Schrank", article:"der", translation:"cupboard"},
-  {word:"Schuh", article:"der", translation:"shoe"},
-  {word:"Schüler", article:"der", translation:"pupil"},
-  {word:"Schule", article:"die", translation:"school"},
-  {word:"Schwein", article:"das", translation:"pig"},
-  {word:"See", article:"der", translation:"lake"},
-  {word:"Silvester", article:"der", translation:"New Year's Eve"},
-  {word:"Situation", article:"die", translation:"situation"},
-  {word:"Sommer", article:"der", translation:"summer"},
-  {word:"Sommerferien", article:"die", translation:"summer holidays"},
-  {word:"Sonne", article:"die", translation:"sun"},
-  {word:"Spiel", article:"das", translation:"game"},
-  {word:"Spieler", article:"der", translation:"player"},
-  {word:"Sprache", article:"die", translation:"language"},
-  {word:"Stadt", article:"die", translation:"city"},
-  {word:"Stift", article:"der", translation:"pen"},
-  {word:"Straße", article:"die", translation:"street"},
-  {word:"Student", article:"der", translation:"student"},
-  {word:"Stuhl", article:"der", translation:"chair"},
-  {word:"Supermarkt", article:"der", translation:"supermarket"},
-  {word:"Tafel", article:"die", translation:"blackboard"},
-  {word:"Tag", article:"der", translation:"day"},
-  {word:"Tasche", article:"die", translation:"bag"},
-  {word:"Tee", article:"der", translation:"tea"},
-  {word:"Technologie", article:"die", translation:"technology"},
-  {word:"Telefon", article:"das", translation:"telephone"},
-  {word:"Thema", article:"das", translation:"topic"},
-  {word:"Tier", article:"das", translation:"animal"},
-  {word:"Tisch", article:"der", translation:"table"},
-  {word:"Tomate", article:"die", translation:"tomato"},
-  {word:"Tradition", article:"die", translation:"tradition"},
-  {word:"Tür", article:"die", translation:"door"},
-  {word:"Uhr", article:"die", translation:"clock"},
-  {word:"Universität", article:"die", translation:"university"},
-  {word:"Universum", article:"das", translation:"universe"},
-  {word:"Urlaub", article:"der", translation:"vacation"},
-  {word:"Verhalten", article:"das", translation:"behavior"},
-  {word:"Vergangenheit", article:"die", translation:"past"},
-  {word:"Vogel", article:"der", translation:"bird"},
-  {word:"Vorname", article:"der", translation:"first name"},
-  {word:"Wahl", article:"die", translation:"election"},
-  {word:"Wald", article:"der", translation:"forest"},
-  {word:"Wasser", article:"das", translation:"water"},
-  {word:"Website", article:"die", translation:"website"},
-  {word:"Weg", article:"der", translation:"path"},
-  {word:"Weihnachten", article:"das", translation:"Christmas"},
-  {word:"Wein", article:"der", translation:"wine"},
-  {word:"Welt", article:"die", translation:"world"},
-  {word:"Wetter", article:"das", translation:"weather"},
-  {word:"Wind", article:"der", translation:"wind"},
-  {word:"Wissen", article:"das", translation:"knowledge"},
-  {word:"Woche", article:"die", translation:"week"},
-  {word:"Wort", article:"das", translation:"word"},
-  {word:"Ziel", article:"das", translation:"goal"},
-  {word:"Zimmer", article:"das", translation:"room"},
-  {word:"Zitrone", article:"die", translation:"lemon"},
-  {word:"Zucker", article:"der", translation:"sugar"},
-  {word:"Zug", article:"der", translation:"train"},
-  {word:"Zukunft", article:"die", translation:"future"}
+    // --- LEVEL B1 (Society, Media, Abstract, Health, Feelings) ---
+    {w:"Abteilung", a:"die", l:"B1"}, {w:"Angebot", a:"das", l:"B1"}, {w:"Besuch", a:"der", l:"B1"}, 
+    {w:"Erfahrung", a:"die", l:"B1"}, {w:"Gefühl", a:"das", l:"B1"}, {w:"Hoffnung", a:"die", l:"B1"}, 
+    {w:"Meinung", a:"die", l:"B1"}, {w:"Umwelt", a:"die", l:"B1"}, {w:"Verkehr", a:"der", l:"B1"}, 
+    {w:"Zukunft", a:"die", l:"B1"}, {w:"Erfolg", a:"der", l:"B1"}, {w:"Gedanke", a:"der", l:"B1"}, 
+    {w:"Gesetz", a:"das", l:"B1"}, {w:"Heimat", a:"die", l:"B1"}, {w:"Lösung", a:"die", l:"B1"},
+    {w:"Gesellschaft", a:"die", l:"B1"}, {w:"Regierung", a:"die", l:"B1"}, {w:"Politik", a:"die", l:"B1"},
+    {w:"Wahl", a:"die", l:"B1"}, {w:"Sicherheit", a:"die", l:"B1"}, {w:"Frieden", a:"der", l:"B1"},
+    {w:"Krieg", a:"der", l:"B1"}, {w:"Nachricht", a:"die", l:"B1"}, {w:"Information", a:"die", l:"B1"},
+    {w:"Werbung", a:"die", l:"B1"}, {w:"Internet", a:"das", l:"B1"}, {w:"Netzwerk", a:"das", l:"B1"},
+    {w:"Krankheit", a:"die", l:"B1"}, {w:"Gesundheit", a:"die", l:"B1"}, {w:"Medizin", a:"die", l:"B1"},
+    {w:"Unfall", a:"der", l:"B1"}, {w:"Schmerz", a:"der", l:"B1"}, {w:"Angst", a:"die", l:"B1"},
+    {w:"Spaß", a:"der", l:"B1"}, {w:"Traum", a:"der", l:"B1"}, {w:"Wunsch", a:"der", l:"B1"},
+    {w:"Ziel", a:"das", l:"B1"}, {w:"Plan", a:"der", l:"B1"}, {w:"Grund", a:"der", l:"B1"},
+    {w:"Folge", a:"die", l:"B1"}, {w:"Ergebnis", a:"das", l:"B1"}, {w:"Unterschied", a:"der", l:"B1"},
+    {w:"Möglichkeit", a:"die", l:"B1"}, {w:"Geschichte", a:"die", l:"B1"}, {w:"Kultur", a:"die", l:"B1"},
+
+    // --- LEVEL B2 (Academic, Business, Abstract, Science, Nuance) ---
+    {w:"Auseinandersetzung", a:"die", l:"B2"}, {w:"Bewusstsein", a:"das", l:"B2"}, {w:"Eigenschaft", a:"die", l:"B2"}, 
+    {w:"Fortschritt", a:"der", l:"B2"}, {w:"Herausforderung", a:"die", l:"B2"}, {w:"Leistung", a:"die", l:"B2"}, 
+    {w:"Voraussetzung", a:"die", l:"B2"}, {w:"Wettbewerb", a:"der", l:"B2"}, {w:"Zusammenhang", a:"der", l:"B2"}, 
+    {w:"Verantwortung", a:"die", l:"B2"}, {w:"Eindruck", a:"der", l:"B2"}, {w:"Maßnahme", a:"die", l:"B2"}, 
+    {w:"Forschung", a:"die", l:"B2"}, {w:"Anspruch", a:"der", l:"B2"}, {w:"Analyse", a:"die", l:"B2"},
+    {w:"Theorie", a:"die", l:"B2"}, {w:"Methode", a:"die", l:"B2"}, {w:"Prinzip", a:"das", l:"B2"},
+    {w:"Struktur", a:"die", l:"B2"}, {w:"Prozess", a:"der", l:"B2"}, {w:"Faktor", a:"der", l:"B2"},
+    {w:"Definition", a:"die", l:"B2"}, {w:"Funktion", a:"die", l:"B2"}, {w:"Bedeutung", a:"die", l:"B2"},
+    {w:"Wirtschaft", a:"die", l:"B2"}, {w:"Industrie", a:"die", l:"B2"}, {w:"Handel", a:"der", l:"B2"},
+    {w:"Markt", a:"der", l:"B2"}, {w:"Konkurrenz", a:"die", l:"B2"}, {w:"Produkt", a:"das", l:"B2"},
+    {w:"Qualität", a:"die", l:"B2"}, {w:"Verhalten", a:"das", l:"B2"}, {w:"Charakter", a:"der", l:"B2"},
+    {w:"Persönlichkeit", a:"die", l:"B2"}, {w:"Emotion", a:"die", l:"B2"}, {w:"Intelligenz", a:"die", l:"B2"},
+    {w:"Wissenschaft", a:"die", l:"B2"}, {w:"Energie", a:"die", l:"B2"}, {w:"Klima", a:"das", l:"B2"},
+    {w:"Atmosphäre", a:"die", l:"B2"}, {w:"Bedingung", a:"die", l:"B2"}, {w:"Notwendigkeit", a:"die", l:"B2"},
+    {w:"Konsequenz", a:"die", l:"B2"}, {w:"Aspekt", a:"der", l:"B2"}, {w:"Perspektive", a:"die", l:"B2"}
 ];
-    const storeKey = 'ddd_trainer_words_v2';
-    const statsKey = 'ddd_trainer_stats_v2';
 
-    const loadWords = () => {
-      const raw = localStorage.getItem(storeKey);
-      return raw ? JSON.parse(raw) : defaultWords.slice();
-    };
-    const saveWords = (list) => localStorage.setItem(storeKey, JSON.stringify(list));
+let activeWords = [];
+let currentIndex = 0;
+let stats = { ok: 0, bad: 0, streak: 0 };
+let isLock = false;
+let activeUnit = null;
+let prevUnit = null;
 
-    let words = loadWords();
-    let order = [...Array(words.length).keys()];
-    let idx = 0; // current index into order
+const levelSelector = document.getElementById('levelSelector');
 
-    let tutorMode = false;
-    let showHints = true;
-    let showTrans = false;
+function loadLevel(level) {
+    if (level === "ALL") {
+        activeWords = [...rawData];
+    } else {
+        activeWords = rawData.filter(item => item.l === level);
+    }
+    document.getElementById('levelCount').innerText = activeWords.length;
+    shuffle(activeWords);
+    currentIndex = 0;
+    
+    // Clear and reset the reel
+    document.getElementById('reel').innerHTML = '';
+    prevUnit = null;
+    spawnWord("pos-active");
+    currentIndex++;
+    spawnWord("pos-next");
+}
 
-    let stats = JSON.parse(localStorage.getItem(statsKey) || '{"right":0,"wrong":0,"streak":0}');
+function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+}
 
-    // ---------- Elements ----------
-    const els = {
-      currentWord: document.getElementById('currentWord'),
-      translation: document.getElementById('translation'),
-      feedback: document.getElementById('feedback'),
-      right: document.getElementById('right'),
-      wrong: document.getElementById('wrong'),
-      streak: document.getElementById('streak'),
-      list: document.getElementById('wordList'),
-      modeBtn: document.getElementById('modeBtn'),
-      hintBtn: document.getElementById('hintBtn'),
-      transBtn: document.getElementById('transBtn'),
-      shuffleBtn: document.getElementById('shuffleBtn'),
-      addBtn: document.getElementById('addBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      addDialog: document.getElementById('addDialog'),
-      cancelAdd: document.getElementById('cancelAdd'),
-      addForm: document.getElementById('addForm'),
-      wWord: document.getElementById('wWord'),
-      wArt: document.getElementById('wArt'),
-      wTrans: document.getElementById('wTrans'),
-    };
+function spawnWord(startPos) {
+    const reel = document.getElementById('reel');
+    const data = activeWords[currentIndex % activeWords.length];
+    const unit = document.createElement('div');
+    unit.className = `slot-unit ${startPos}`;
+    unit.innerHTML = `<span class="article-reveal">${data.a}</span><span class="word-span">${data.w}</span>`;
+    reel.appendChild(unit);
+    if (startPos === "pos-active") activeUnit = unit;
+    return unit;
+}
 
-    // ---------- Helpers ----------
-    function shuffle(array){
-      for(let i=array.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [array[i],array[j]]=[array[j],array[i]];
-      }
-      return array;
+function handleChoice(choice) {
+    if (isLock || activeWords.length === 0) return;
+    const currentData = activeWords[(currentIndex - 1) % activeWords.length];
+    const correctArt = currentData.a;
+    const isRight = choice === correctArt;
+
+    if (!isRight) {
+        activeUnit.classList.add('shake-active');
+        setTimeout(() => activeUnit.classList.remove('shake-active'), 300);
+        stats.bad++;
+        stats.streak = 0;
+        updateScore();
+        return;
     }
 
-    function renderList(){
-      els.list.innerHTML = '';
-      words.forEach((w)=>{
-        const li = document.createElement('li');
-        li.innerHTML = `<b>${w.article}</b> ${w.word} <span class="small">${w.translation? '('+escapeHtml(w.translation)+')':''}</span>`;
-        els.list.appendChild(li);
-      })
-    }
+    isLock = true;
+    stats.ok++;
+    stats.streak++;
+    updateScore();
 
-    function pick(i){
-      const w = words[ order[i] ];
-      els.currentWord.textContent = w.word;
-      els.translation.textContent = showTrans && w.translation ? w.translation : '';
-      if(showHints && w.hint){
-        els.feedback.innerHTML = `Hinweis: ${w.hint}`;
-        els.feedback.className = 'feedback sub';
-      } else {
-        els.feedback.textContent = 'Wähle den richtigen Artikel.';
-        els.feedback.className = 'feedback sub';
-      }
-    }
+    activeUnit.classList.add('resolved');
+    activeUnit.style.color = `var(--${correctArt})`;
 
-    function setStats(){
-      els.right.textContent = stats.right;
-      els.wrong.textContent = stats.wrong;
-      els.streak.textContent = stats.streak;
-      localStorage.setItem(statsKey, JSON.stringify(stats));
-    }
-
-    function next(){
-      idx = (idx + 1) % order.length;
-      pick(idx);
-    }
-
-    function answer(choice){
-      const w = words[ order[idx] ];
-      if(choice === w.article){
-        stats.right++; stats.streak++;
-        els.feedback.innerHTML = `✅ Richtig: <b>${w.article}</b> ${w.word}`;
-        els.feedback.className = 'feedback ok';
-        setStats();
-        setTimeout(next, 500);
-      } else {
-        stats.wrong++; stats.streak = 0; setStats();
-        if(tutorMode){
-          els.feedback.innerHTML = `❌ Nicht ganz. Versuche es noch einmal.` + (w.hint?`<br><span class="sub">${w.hint}</span>`:'');
-          els.feedback.className = 'feedback bad';
-        } else {
-          els.feedback.innerHTML = `❌ Falsch. Richtig ist: <b>${w.article}</b> ${w.word}` + (w.hint?`<br><span class="sub">${w.hint}</span>`:'');
-          els.feedback.className = 'feedback bad';
-          setTimeout(next, 900);
+    setTimeout(() => {
+        const nextInLine = document.querySelector('.pos-next');
+        if (prevUnit) {
+            prevUnit.className = 'slot-unit pos-exit';
+            const toDelete = prevUnit;
+            setTimeout(() => toDelete.remove(), 700);
         }
-      }
-    }
+        prevUnit = activeUnit;
+        prevUnit.className = 'slot-unit pos-prev resolved'; 
+        activeUnit = nextInLine;
+        activeUnit.className = 'slot-unit pos-active';
+        currentIndex++;
+        spawnWord("pos-next");
+        isLock = false;
+    }, 900);
+}
 
-    function guessHint(word){
-      const w = word.toLowerCase();
-      if (w.endsWith('ung') || w.endsWith('heit') || w.endsWith('keit') || w.endsWith('schaft') || w.endsWith('ion') || w.endsWith('tät')) return 'Endung → meist die';
-      if (w.endsWith('chen') || w.endsWith('lein')) return 'Diminutiv → das';
-      if (w.endsWith('ment') || w.endsWith('um')) return 'Fremdendung → das';
-      if (w.endsWith('ismus') || w.endsWith('ling') || w.endsWith('ig') || w.endsWith('er')) return 'Endung → häufig der';
-      if (w.startsWith('ge') && w.endsWith('e')) return 'Ge-…-e → oft das';
-      return '';
-    }
+function updateScore() {
+    document.getElementById('scoreOk').innerText = stats.ok;
+    document.getElementById('scoreBad').innerText = stats.bad;
+    document.getElementById('streak').innerText = stats.streak;
+}
 
-    function escapeHtml(s){
-      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
-    }
+levelSelector.addEventListener('change', (e) => loadLevel(e.target.value));
 
-    // ---------- Events ----------
-    document.querySelectorAll('.btn[data-choice]').forEach(btn=>{
-      btn.addEventListener('click', ()=> answer(btn.dataset.choice));
-    });
+window.onkeydown = (e) => {
+    const key = e.key.toLowerCase();
+    if (key === 'a') handleChoice('der');
+    if (key === 's') handleChoice('die');
+    if (key === 'd') handleChoice('das');
+};
 
-    els.modeBtn.addEventListener('click', ()=>{
-      tutorMode = !tutorMode; els.modeBtn.setAttribute('aria-pressed', String(tutorMode));
-      els.modeBtn.textContent = tutorMode ? 'Tutor-Mode (an)' : 'Tutor-Mode';
-    });
+// Start default level
+loadLevel("A1");
+updateScore();
 
-    els.hintBtn.addEventListener('click', ()=>{
-      showHints = !showHints; els.hintBtn.setAttribute('aria-pressed', String(showHints));
-      els.hintBtn.textContent = showHints ? 'Hinweis an' : 'Hinweis aus';
-      pick(idx);
-    });
-
-    els.transBtn.addEventListener('click', ()=>{
-      showTrans = !showTrans; els.transBtn.setAttribute('aria-pressed', String(showTrans));
-      els.transBtn.textContent = showTrans ? 'Übersetzung an' : 'Übersetzung aus';
-      pick(idx);
-    });
-
-    els.shuffleBtn.addEventListener('click', ()=>{
-      order = shuffle([...Array(words.length).keys()]); idx = 0; pick(idx);
-    });
-
-    els.resetBtn.addEventListener('click', ()=>{
-      if(confirm('Statistiken zurücksetzen?')) {
-        stats = {right:0, wrong:0, streak:0}; setStats();
-      }
-    });
-
-    els.addBtn.addEventListener('click', ()=> els.addDialog.showModal());
-    els.cancelAdd.addEventListener('click', ()=> els.addDialog.close());
-
-    els.addForm.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      let word = els.wWord.value.trim();
-      const article = els.wArt.value;
-      const translation = els.wTrans.value.trim();
-      if(!word) return;
-
-      // Capitalize first letter like a proper noun
-      word = word.charAt(0).toUpperCase() + word.slice(1);
-
-      words.push({word, article, translation, hint: guessHint(word)});
-      saveWords(words);
-      renderList();
-      order = shuffle([...Array(words.length).keys()]); idx = 0; pick(idx);
-      e.target.reset(); els.addDialog.close();
-    });
-
-    // Keyboard shortcuts
-    window.addEventListener('keydown', (e)=>{
-      const k = e.key.toLowerCase();
-      if(k === 'a') answer('der');
-      else if(k === 's') answer('die');
-      else if(k === 'd') answer('das');
-      else if(k === 'n') next();
-      else if(k === 'h') { showHints = !showHints; els.hintBtn.setAttribute('aria-pressed', String(showHints)); els.hintBtn.textContent = showHints ? 'Hinweis an' : 'Hinweis aus'; pick(idx); }
-      else if(k === 't') { showTrans = !showTrans; els.transBtn.setAttribute('aria-pressed', String(showTrans)); els.transBtn.textContent = showTrans ? 'Übersetzung an' : 'Übersetzung aus'; pick(idx); }
-    });
-
-    // ---------- Init ----------
-    (function init(){
-      order = shuffle([...Array(words.length).keys()]);
-      renderList();
-      setStats();
-      pick(idx);
-    })();
-  </script>
+</script>
 </body>
 </html>
