@@ -15,7 +15,6 @@
     --col-w: 520px;
     --stage-w: 380px;
 
-    /* iOS Chrome/Safari bottom toolbar helper */
     --ios-bar: 64px;
 }
 
@@ -23,7 +22,6 @@
 
 html, body { height: 100%; }
 
-/* IMPORTANT: allow scrolling on mobile if needed */
 body {
     margin: 0;
     font-family: system-ui, -apple-system, sans-serif;
@@ -37,7 +35,6 @@ body {
     display: flex;
     flex-direction: column;
 
-    /* was hidden -> made app unusable on iPhone */
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -97,7 +94,7 @@ header {
     cursor: pointer;
 }
 
-/* --- LEVEL CHIPS (multi-select) --- */
+/* --- LEVEL CHIPS --- */
 .level-chips {
     display: inline-flex;
     gap: 6px;
@@ -120,14 +117,13 @@ header {
 }
 .chip:active { transform: scale(0.98); }
 .chip:hover { border-color: rgba(163, 169, 255, 0.55); }
-
 .chip.active {
     background: rgba(163, 169, 255, 0.18);
     border-color: rgba(163, 169, 255, 0.75);
     color: var(--text);
 }
 
-/* --- MAIN CONTAINER (stack + allow scroll if needed) --- */
+/* --- MAIN --- */
 main {
     flex: 1;
     width: 100%;
@@ -140,18 +136,13 @@ main {
     flex-direction: column;
     gap: 10px;
 
-    /* ensure buttons are not behind iOS bottom toolbar */
     padding-bottom: max(14px, env(safe-area-inset-bottom));
 }
-
-/* add extra breathing room specifically on iOS browsers */
 @supports (-webkit-touch-callout: none) {
-    main {
-        padding-bottom: max(14px, env(safe-area-inset-bottom) + var(--ios-bar));
-    }
+    main { padding-bottom: max(14px, env(safe-area-inset-bottom) + var(--ios-bar)); }
 }
 
-/* 1. HUD */
+/* HUD */
 .game-hud {
     display: flex;
     justify-content: space-around;
@@ -162,8 +153,6 @@ main {
     padding: 0 10px;
     height: 50px;
 }
-
-/* allow HUD to wrap a bit on very tight widths */
 .stat-item { text-align: center; min-width: 90px; }
 .stat-item .label {
     display: block;
@@ -172,20 +161,15 @@ main {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-.stat-item .value {
-    font-size: 18px;
-    font-weight: 800;
-}
+.stat-item .value { font-size: 18px; font-weight: 800; }
 
-/* 2. STAGE AREA */
+/* STAGE */
 .stage-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: visible;
 }
-
-/* IMPORTANT: make stage SHORTER on mobile so it doesn't eat the screen */
 .stage {
     position: relative;
     width: min(320px, 92vw);
@@ -197,8 +181,6 @@ main {
     box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
     overflow: hidden;
 }
-
-/* fades: smaller so stage doesn't look “all black” */
 .stage::before,
 .stage::after {
     content: "";
@@ -212,7 +194,7 @@ main {
 .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
 .stage::after  { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
-/* --- LANGUAGE BUTTON (inside stage, top-left) --- */
+/* LANGUAGE BUTTON */
 .lang-toggle {
     position: absolute;
     top: 10px;
@@ -243,7 +225,7 @@ main {
     border-color: rgba(163, 169, 255, 0.55);
 }
 
-/* 3. CONTROLS */
+/* CONTROLS */
 .controls-area {
     display: flex;
     gap: 8px;
@@ -251,7 +233,6 @@ main {
     height: 90px;
     align-items: stretch;
 }
-
 .btn {
     flex: 1;
     border-radius: 14px;
@@ -264,34 +245,46 @@ main {
     transition: transform 0.1s;
     touch-action: manipulation;
 }
-
 .btn:active { transform: translateY(4px); box-shadow: none; }
 .btn.der { background: var(--der); }
 .btn.die { background: var(--die); }
 .btn.das { background: var(--das); }
 
-/* --- SLOT ANIMATIONS --- */
+/* --- SLOT --- */
 .reel-container { position: relative; width: 100%; height: 100%; }
 
 .slot-unit {
     position: absolute;
     left: 0; right: 0;
     height: 140px;
+
     display: flex;
+    flex-direction: column;          /* caption above, translation below */
     align-items: center;
     justify-content: center;
+
     transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     font-weight: 800;
 
     padding: 0 18px;
     text-align: center;
-    gap: 10px;
 }
 
-/* readability */
-.slot-unit.pos-active { text-shadow: 0 10px 24px rgba(0,0,0,0.65); }
+/* Caption row: ALWAYS centered */
+.caption {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
 
-/* IMPORTANT: article and word use SAME font sizing rules */
+    /* IMPORTANT: no gap until resolved (prevents “fake offset”) */
+    gap: 0;
+    transition: gap 220ms ease;
+}
+
+/* When resolved, article+word breathe a bit but stay centered */
+.resolved .caption { gap: 10px; }
+
+/* Article + word share sizing rules */
 .article-reveal,
 .word-span {
     display: inline-block;
@@ -299,172 +292,58 @@ main {
     line-height: 1.05;
 }
 
-.word-span { font-size: 42px; }
+/* Default sizes (bigger than before) */
+.word-span { font-size: 48px; }
+.article-reveal { font-size: 48px; }
 
+/* Article is truly “not there” visually until resolved (no offset) */
 .article-reveal {
-    font-size: 42px;
     opacity: 0;
     max-width: 0;
     overflow: hidden;
-    transition: 0.3s;
-    margin-right: 0;
+    transition: max-width 260ms ease, opacity 220ms ease;
 }
+
+/* Reveal (still centered because caption is centered) */
 .resolved .article-reveal {
     opacity: 1;
     max-width: 120px;
-    margin-right: 0;
 }
 
-/* ====== AUTO SHRINK: both article and word shrink together ====== */
+/* AUTO SHRINK: article and word shrink together */
 .slot-unit.pos-active .word-span,
-.slot-unit.pos-active .article-reveal { font-size: clamp(22px, 6vw, 42px); }
+.slot-unit.pos-active .article-reveal {
+    font-size: clamp(24px, 7vw, 48px);
+}
 
 .slot-unit.pos-prev .word-span,
-.slot-unit.pos-prev .article-reveal { font-size: clamp(16px, 3.6vw, 26px); }
+.slot-unit.pos-prev .article-reveal {
+    font-size: clamp(18px, 4.2vw, 30px);
+}
 
 .slot-unit.pos-next .word-span,
-.slot-unit.pos-next .article-reveal { font-size: clamp(14px, 3.2vw, 22px); }
+.slot-unit.pos-next .article-reveal {
+    font-size: clamp(16px, 3.6vw, 24px);
+}
 
-/* --- Translation subtitle (active only) --- */
+/* Translation: normal case, more spacing, centered with caption */
 .sub-translation {
-    position: absolute;
-    left: 18px;
-    right: 18px;
-    top: 86px;
-    text-align: center;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(231, 236, 255, 0.55);
-    font-size: 11px;
-    line-height: 1.1;
+    margin-top: 12px;               /* not too close */
+    font-weight: 600;
+    letter-spacing: 0.02em;         /* no loud spacing */
+    text-transform: none;           /* IMPORTANT: no caps */
+    color: rgba(231, 236, 255, 0.62);
+    font-size: 13px;
+    line-height: 1.15;
     pointer-events: none;
 }
+
+/* Hide translation when not active/resolved */
 .slot-unit.pos-prev .sub-translation,
 .slot-unit.pos-next .sub-translation { display: none; }
 .resolved .sub-translation { display: none; }
 
-/* keep previous readable */
-.slot-unit.pos-prev { opacity: 0.78; filter: blur(0.6px); }
-.slot-unit.pos-next { opacity: 0.45; filter: blur(1.5px); }
-
-/* Base positions (default) */
-.slot-unit.pos-next   { transform: translateY(20px)  scale(0.82); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1);    filter: blur(0); }
-.slot-unit.pos-prev   { transform: translateY(330px) scale(0.92); }
-.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6);  opacity: 0; filter: blur(0); }
-
-.shake-active { animation: shake 0.3s; }
-@keyframes shake {
-    0%, 100% { transform: translateY(170px) translateX(0); }
-    25% { transform: translateY(170px) translateX(-10px); }
-    75% { transform: translateY(170px) translateX(10px); }
-}
-
-/* ===================================================================== */
-/* MOBILE */
-/* ===================================================================== */
-@media (max-width: 768px) {
-
-    header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        padding: 8px 15px 10px;
-        padding-top: max(8px, env(safe-area-inset-top));
-    }
-
-    .credits-top { justify-content: flex-start; font-size: 10px; }
-    .header-row { align-items: flex-start; }
-
-    .app-title {
-        font-size: 18px;
-        line-height: 1.05;
-        margin: 0;
-    }
-
-    /* IMPORTANT: shorter window */
-    .stage {
-        height: clamp(240px, 36dvh, 360px);
-        border-radius: 22px;
-    }
-
-    .stage::before, .stage::after { height: 60px; }
-
-    .lang-toggle {
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        top: 10px;
-        left: 10px;
-        font-size: 17px;
-    }
-
-    .chip { padding: 5px 9px; font-size: 12px; }
-
-    .controls-area { height: 82px; }
-    .btn { font-size: 18px; }
-
-    /* slot positions adapted to shorter stage */
-    .slot-unit.pos-next   { transform: translateY(8px)  scale(0.82); }
-    .slot-unit.pos-active { transform: translateY(92px) scale(1);    }
-    .slot-unit.pos-prev   { transform: translateY(170px) scale(0.92); }
-    .slot-unit.pos-exit   { transform: translateY(360px) scale(0.65); opacity: 0; }
-
-    .shake-active { animation: shake-mobile 0.3s; }
-    @keyframes shake-mobile {
-        0%, 100% { transform: translateY(92px) translateX(0); }
-        25% { transform: translateY(92px) translateX(-10px); }
-        75% { transform: translateY(92px) translateX(10px); }
-    }
-}
-
-/* ===================================================================== */
-/* DESKTOP ONLY: unify widths of HUD/STAGE/BUTTONS */
-/* ===================================================================== */
-@media (min-width: 769px) {
-
-    header {
-        padding-left: 0;
-        padding-right: 0;
-    }
-    header > * {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding-left: 18px;
-        padding-right: 18px;
-    }
-
-    main {
-        max-width: 1100px;
-        padding-top: 18px;
-    }
-
-    .game-hud,
-    .controls-area,
-    .stage-wrapper {
-        width: var(--col-w);
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .game-hud {
-        max-width: 720px;
-        height: 56px;
-        padding: 0 18px;
-        border-radius: 14px;
-    }
-
-    .stat-item { min-width: 140px; }
-    .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
-    .stat-item .value { font-size: 20px; }
-
-    .stage { width: var(--stage-w); height: 480px; }
-
-    .controls-area { gap: 14px; height: 90px; }
-    .btn {
-        font-size: 22px;
-        border-radius: 16px;
-        padding: 18px 0;
-    }
-}
+/* readability tuning */
+.slot-unit.pos-prev { opacity: 0.80; filter: blur(0.35px); }
+.slot-unit.pos-next { opacity: 0.45; filter: blur(1.2px); }
+.slot-unit.pos-active { text-shadow: 0 10px 24px rgba(0,0,0,0.65
