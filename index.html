@@ -28,33 +28,34 @@
 </header>
 
 <main>
-    <section>
+    <div class="game-hud">
+        <div class="stat-item">
+            <span class="label">Streak</span>
+            <span class="value" id="streak" style="color:var(--accent)">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Score</span>
+            <span class="value">
+                <span id="scoreOk" style="color:var(--ok)">0</span> : <span id="scoreBad" style="color:var(--bad)">0</span>
+            </span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Level</span>
+            <span class="value" id="levelCount" style="font-size: 14px; color: var(--muted)">0</span>
+        </div>
+    </div>
+
+    <div class="stage-wrapper">
         <div class="stage">
             <div id="reel" class="reel-container"></div>
         </div>
-        <div class="controls-area">
-            <div class="btnrow">
-                <button class="btn der" onclick="handleChoice('der')">der</button>
-                <button class="btn die" onclick="handleChoice('die')">die</button>
-                <button class="btn das" onclick="handleChoice('das')">das</button>
-            </div>
-        </div>
-    </section>
+    </div>
 
-    <aside>
-        <div class="stat-box">
-            <div class="stat-label">Richtig / Falsch</div>
-            <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Streak</div>
-            <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
-        </div>
-        <div class="stat-box" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
-            <b style="color:var(--text)">Vokabeln im Deck:</b><br>
-            <span id="levelCount">0</span> Wörter geladen.
-        </div>
-    </aside>
+    <div class="controls-area">
+        <button class="btn der" onclick="handleChoice('der')">der</button>
+        <button class="btn die" onclick="handleChoice('die')">die</button>
+        <button class="btn das" onclick="handleChoice('das')">das</button>
+    </div>
 </main>
 
 <script src="words.js"></script>
