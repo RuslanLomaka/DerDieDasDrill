@@ -7,14 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="credits">
-        Created by Ruslan Lomaka | 
-        <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank">LinkedIn</a>
-    </div>
 
 <header>
-    <h2 style="color:var(--accent); margin:0; font-size: 20px;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
-    <div class="controls-top">
+    <h2 style="color:var(--accent); margin:0; font-size: 20px;">
+        Slot <span style="font-weight: 300;">Deutsch</span>
+    </h2>
+
+    <div class="controls-top" style="display:flex; align-items:center; gap:10px;">
+        <div class="credits-top">
+            <span>Created by Ruslan Lomaka</span>
+            <span style="opacity:.55;">|</span>
+            <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+
         <select class="level-select" id="levelSelector">
             <option value="A1">Level A1</option>
             <option value="A2">Level A2</option>
@@ -22,6 +27,7 @@
             <option value="B2">Level B2</option>
             <option value="ALL">Mix All</option>
         </select>
+
         <button class="pill" onclick="location.reload()">Reset</button>
     </div>
 </header>
@@ -78,7 +84,7 @@ function loadLevel(level) {
     document.getElementById('levelCount').innerText = activeWords.length;
     shuffle(activeWords);
     currentIndex = 0;
-    
+
     document.getElementById('reel').innerHTML = '';
     prevUnit = null;
     spawnWord("pos-active");
@@ -135,7 +141,7 @@ function handleChoice(choice) {
             setTimeout(() => toDelete.remove(), 700);
         }
         prevUnit = activeUnit;
-        prevUnit.className = 'slot-unit pos-prev resolved'; 
+        prevUnit.className = 'slot-unit pos-prev resolved';
         activeUnit = nextInLine;
         activeUnit.className = 'slot-unit pos-active';
         currentIndex++;
