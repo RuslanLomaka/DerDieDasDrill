@@ -21,7 +21,6 @@ body {
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
 
-    /* Stable on real phones */
     min-height: 100vh;
     height: 100dvh;
 
@@ -123,7 +122,7 @@ main {
     padding: 0 10px;
 }
 
-.stat-item { text-align: center; }
+.stat-item { text-align: center; min-width: 90px; }
 .stat-item .label {
     display: block;
     font-size: 9px;
@@ -149,7 +148,7 @@ main {
 .stage {
     position: relative;
     width: 320px;
-    height: 480px; /* desktop/base */
+    height: 480px;
     background: #080c18;
     border-radius: 24px;
     border: 3px solid var(--border);
@@ -212,7 +211,7 @@ main {
     font-weight: 800;
 }
 
-/* IMPORTANT: hide article until resolved */
+/* hide article until resolved */
 .article-reveal {
     opacity: 0;
     max-width: 0;
@@ -252,7 +251,7 @@ main {
 }
 
 /* ===================================================================== */
-/* MOBILE: credits on top, then header row; keep prev inside stage */
+/* MOBILE: keep as-is */
 /* ===================================================================== */
 @media (max-width: 768px) {
 
@@ -299,7 +298,6 @@ main {
             0 4px 0 rgba(0,0,0,0.3);
     }
 
-    /* Keep PREV fully visible inside 420px stage */
     .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
     .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
     .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); }
@@ -314,48 +312,48 @@ main {
 }
 
 /* ===================================================================== */
-/* DESKTOP ONLY: make it look intentional WITHOUT touching mobile */
+/* DESKTOP ONLY: fix scoreboard looking cramped/weird */
 /* ===================================================================== */
 @media (min-width: 769px) {
 
-    /* keep header content nicely centered while staying full-width */
+    /* Center header content a bit without changing HTML */
     header {
         padding-left: 0;
         padding-right: 0;
     }
     header > * {
-        max-width: 1000px;
+        max-width: 1100px;
         margin: 0 auto;
         padding-left: 18px;
         padding-right: 18px;
     }
 
-    /* make main column slightly wider and centered */
     main {
-        max-width: 1000px;
+        max-width: 1100px;
         padding-top: 18px;
     }
 
-    /* center HUD and give it a bit more presence */
+    /* Make HUD properly wide and readable (like your older version) */
     .game-hud {
-        max-width: 520px;
+        max-width: 720px;
         margin-left: auto;
         margin-right: auto;
+        height: 56px;
+        padding: 0 18px;
         border-radius: 14px;
-        padding: 8px 14px;
     }
 
-    /* keep stage centered */
-    .stage-wrapper {
-        margin-top: 6px;
-        margin-bottom: 14px;
-    }
+    .stat-item { min-width: 140px; }
+    .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
+    .stat-item .value { font-size: 20px; }
 
-    /* controls: keep same nice wide buttons like before (no shrinking) */
+    /* Keep stage + buttons aligned as a column */
+    .stage-wrapper { margin-top: 6px; margin-bottom: 14px; }
+
     .controls-area {
         max-width: 520px;
         margin-left: auto;
         margin-right: auto;
-        gap: 12px;
+        gap: 14px;
     }
 }
