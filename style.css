@@ -68,20 +68,19 @@ header {
 
 /* --- CREDITS (Iteration 1) --- */
 .credits-top {
-    font-size: 11px;            /* bigger than before (8px) */
+    font-size: 11px;
     color: rgba(231, 236, 255, 0.65);
     display: flex;
     align-items: center;
     gap: 6px;
     white-space: nowrap;
+    line-height: 1;
 }
 .credits-top a {
     color: rgba(163, 169, 255, 0.85);
     text-decoration: none;
 }
-.credits-top a:hover {
-    text-decoration: underline;
-}
+.credits-top a:hover { text-decoration: underline; }
 
 /* --- MAIN CONTAINER --- */
 main {
@@ -93,8 +92,6 @@ main {
     margin: 0 auto;
     padding: 10px;
     position: relative;
-
-    /* Keep layout tight (no huge gaps) */
     justify-content: flex-start;
 }
 
@@ -126,7 +123,7 @@ main {
 
 /* 2. STAGE AREA */
 .stage-wrapper {
-    flex: 0 0 auto;             /* IMPORTANT: prevents pushing buttons far down */
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -137,7 +134,7 @@ main {
 .stage {
     position: relative;
     width: 320px;
-    height: 480px;              /* desktop/base */
+    height: 480px;
     background: #080c18;
     border-radius: 24px;
     border: 3px solid var(--border);
@@ -239,12 +236,8 @@ main {
 /* ===================================================================== */
 @media (max-width: 768px) {
 
-    /* Make main rectangle shorter (your request) */
-    .stage {
-        height: 420px; /* was 480px */
-    }
+    .stage { height: 420px; }
 
-    /* Neon glow (as you liked) */
     .btn.der {
         box-shadow:
             0 0 12px rgba(75,139,255,0.55),
@@ -264,17 +257,11 @@ main {
             0 4px 0 rgba(0,0,0,0.3);
     }
 
-    /* Reposition slot so PREV is fully visible:
-       stage height = 420
-       word height  = 140
-       so prev Y must be <= 280 to stay inside.
-    */
     .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
     .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
     .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); }
     .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
 
-    /* Shake must match the new active Y */
     .shake-active { animation: shake-mobile 0.3s; }
     @keyframes shake-mobile {
         0%, 100% { transform: translateY(140px) translateX(0); }
@@ -282,6 +269,19 @@ main {
         75% { transform: translateY(140px) translateX(10px); }
     }
 
-    /* credits slightly smaller on narrow screens */
-    .credits-top { font-size: 10px; }
+    /* credits become a small single line ABOVE the header content */
+    header {
+        position: relative;
+        padding-top: 14px; /* room for the top line */
+    }
+    .credits-top {
+        position: absolute;
+        top: 3px;
+        left: 15px;
+        right: 15px;
+        justify-content: center;     /* centered line */
+        font-size: 10px;
+        opacity: 0.9;
+        pointer-events: auto;
+    }
 }
