@@ -1,482 +1,329 @@
-/* --- GLOBAL RESET & VARIABLES --- */
-:root {
-    --bg: #0b1020;
-    --card: #12192d;
-    --muted: #a0aec0;
-    --text: #e7ecff;
-    --ok: #36c689;
-    --bad: #ff6470;
-    --der: #4b8bff;
-    --die: #ff6cae;
-    --das: #ffd84b;
-    --border: #24335c;
-    --accent: #a3a9ff;
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <!-- iOS safe-area + stable viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Slot Deutsch</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-    --col-w: 520px;
-    --stage-w: 380px;
+<header>
+  <div class="credits-top">
+    <span>Created by Ruslan Lomaka</span>
+    <span style="opacity:.55;">|</span>
+    <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank" rel="noopener">LinkedIn</a>
+    <span style="opacity:.55;">|</span>
+    <a href="https://github.com/RuslanLomaka/DerDieDasDrill" target="_blank" rel="noopener">GitHub</a>
+  </div>
+
+  <div class="header-row">
+    <h2 class="app-title" style="color:var(--accent); font-size: 20px;">
+      Slot <span style="font-weight: 300;">Deutsch</span>
+    </h2>
+
+    <div class="controls-top">
+      <div class="level-chips" id="levelChips" aria-label="Levels">
+        <button class="chip active" type="button" data-level="A1">A1</button>
+        <button class="chip" type="button" data-level="A2">A2</button>
+        <button class="chip" type="button" data-level="B1">B1</button>
+        <button class="chip" type="button" data-level="B2">B2</button>
+        <button class="chip" type="button" data-level="ALL">ALL</button>
+      </div>
+
+      <button class="pill" id="resetBtn" onclick="location.reload()">Reset</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="game-hud">
+    <div class="stat-item">
+      <span class="label" id="labelStreak">Streak</span>
+      <span class="value" id="streak" style="color:var(--accent)">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="label" id="labelScore">Score</span>
+      <span class="value">
+        <span id="scoreOk" style="color:var(--ok)">0</span> : <span id="scoreBad" style="color:var(--bad)">0</span>
+      </span>
+    </div>
+    <div class="stat-item">
+      <span class="label" id="labelWords">Words</span>
+      <span class="value" id="levelCount" style="color: var(--muted)">0</span>
+    </div>
+  </div>
+
+  <div class="stage-wrapper">
+    <div class="stage">
+      <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
+      <div id="reel" class="reel-container"></div>
+    </div>
+  </div>
+
+  <div class="controls-area">
+    <button class="btn der" onclick="handleChoice('der')">der</button>
+    <button class="btn die" onclick="handleChoice('die')">die</button>
+    <button class="btn das" onclick="handleChoice('das')">das</button>
+  </div>
+</main>
+
+<script src="words.js"></script>
+<script>
+// --- GAME LOGIC ---
+let activeWords = [];
+let currentIndex = 0;
+let stats = { ok: 0, bad: 0, streak: 0 };
+let isLock = false;
+let activeUnit = null;
+let prevUnit = null;
+
+const resetBtn = document.getElementById('resetBtn');
+
+/* =========================
+   UI TRANSLATIONS
+   ========================= */
+const ui = {
+  de: { streak: "Streak", score: "Score", words: "Words", reset: "Reset" },
+  en: { streak: "Streak", score: "Score", words: "Words", reset: "Reset" },
+  uk: { streak: "Серія", score: "Рахунок", words: "Слів", reset: "Скинути" }
+};
+
+/* =========================
+   LANGUAGE TOGGLE
+   ========================= */
+const langBtn = document.getElementById('langBtn');
+const LANGS = ["de", "en", "uk"];
+const LANG_FLAG = { de: "🇩🇪", en: "🇬🇧", uk: "🇺🇦" };
+let currentLangIndex = 0;
+
+function currentLang() {
+  return LANGS[currentLangIndex];
 }
 
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: system-ui, -apple-system, sans-serif;
-    background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
-    color: var(--text);
-
-    min-height: 100vh;
-    height: 100dvh;
-
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+function setLangIndex(idx) {
+  currentLangIndex = (idx + LANGS.length) % LANGS.length;
+  const lang = currentLang();
+  langBtn.textContent = LANG_FLAG[lang] || "🏳️";
+  applyUiLang(lang);
+  refreshActiveTranslation();
 }
 
-/* --- HEADER --- */
-header {
-    width: 100%;
-    padding: 8px 15px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    background: rgba(11, 16, 32, 0.95);
-    border-bottom: 1px solid var(--border);
-    z-index: 10;
+function bumpLang() {
+  setLangIndex(currentLangIndex + 1);
+  langBtn.classList.remove('is-dim');
 }
 
-.header-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+langBtn.addEventListener('click', bumpLang);
+langBtn.addEventListener('touchstart', () => langBtn.classList.remove('is-dim'), { passive: true });
+
+function applyUiLang(lang) {
+  const t = ui[lang] || ui.de;
+  document.getElementById('labelStreak').textContent = t.streak;
+  document.getElementById('labelScore').textContent  = t.score;
+  document.getElementById('labelWords').textContent  = t.words;
+  resetBtn.textContent = t.reset;
 }
 
-.controls-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* =========================
+   LEVEL CHIPS (multi-select)
+   ========================= */
+const levelChips = document.getElementById('levelChips');
+const chipButtons = [...levelChips.querySelectorAll('.chip')];
+const LEVELS = ["A1", "A2", "B1", "B2"];
+let selectedLevels = new Set(["A1"]);
+
+function setChipActive(level, isActive) {
+  const btn = chipButtons.find(b => b.dataset.level === level);
+  if (!btn) return;
+  btn.classList.toggle('active', isActive);
 }
 
-.credits-top {
-    font-size: 11px;
-    color: rgba(231, 236, 255, 0.65);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    line-height: 1;
-}
-.credits-top a {
-    color: rgba(163, 169, 255, 0.9);
-    text-decoration: none;
-    pointer-events: auto;
-}
-.credits-top a:hover { text-decoration: underline; }
-
-.pill {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
+function updateAllChipState() {
+  const allOn = LEVELS.every(l => selectedLevels.has(l));
+  setChipActive("ALL", allOn);
 }
 
-/* --- LEVEL CHIPS (multi-select) --- */
-.level-chips {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: nowrap;
-}
-.chip {
-    background: rgba(26, 35, 64, 0.55);
-    border: 1px solid rgba(36, 51, 92, 0.95);
-    color: rgba(231, 236, 255, 0.85);
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    transition: transform 120ms ease, background 180ms ease, border-color 180ms ease, opacity 180ms ease;
-}
-.chip:active { transform: scale(0.98); }
-.chip:hover { border-color: rgba(163, 169, 255, 0.55); }
+function rebuildWordPool() {
+  if (selectedLevels.size === 0) {
+    selectedLevels.add("A1");
+    setChipActive("A1", true);
+  }
 
-.chip.active {
-    background: rgba(163, 169, 255, 0.18);
-    border-color: rgba(163, 169, 255, 0.75);
-    color: var(--text);
+  activeWords = rawData.filter(item => selectedLevels.has(item.l));
+  document.getElementById('levelCount').innerText = activeWords.length;
+
+  shuffle(activeWords);
+  currentIndex = 0;
+
+  document.getElementById('reel').innerHTML = '';
+  prevUnit = null;
+
+  spawnWord("pos-active");
+  currentIndex++;
+  spawnWord("pos-next");
+
+  langBtn.classList.remove('is-dim');
+  refreshActiveTranslation();
 }
 
-/* --- MAIN CONTAINER --- */
-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 10px;
-    position: relative;
-    justify-content: flex-start;
+function onChipClick(level) {
+  if (level === "ALL") {
+    const allOn = LEVELS.every(l => selectedLevels.has(l));
+    if (!allOn) {
+      LEVELS.forEach(l => {
+        selectedLevels.add(l);
+        setChipActive(l, true);
+      });
+    } else {
+      selectedLevels = new Set(["A1"]);
+      LEVELS.forEach(l => setChipActive(l, l === "A1"));
+    }
+    updateAllChipState();
+    rebuildWordPool();
+    return;
+  }
+
+  if (selectedLevels.has(level)) {
+    selectedLevels.delete(level);
+    setChipActive(level, false);
+  } else {
+    selectedLevels.add(level);
+    setChipActive(level, true);
+  }
+
+  updateAllChipState();
+  rebuildWordPool();
 }
 
-/* 1. HUD */
-.game-hud {
-    flex: 0 0 50px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 10px;
-    padding: 0 10px;
+levelChips.addEventListener('click', (e) => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  onChipClick(btn.dataset.level);
+});
+
+/* =========================
+   TRANSLATION SUBTITLE
+   ========================= */
+function getTranslationFor(item, lang) {
+  if (!item) return "";
+  if (lang === "de") return "";
+  return item.t?.[lang] || "";
 }
 
-.stat-item { text-align: center; min-width: 90px; }
-.stat-item .label {
-    display: block;
-    font-size: 9px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.stat-item .value {
-    font-size: 18px;
-    font-weight: 800;
-}
+function refreshActiveTranslation() {
+  const lang = currentLang();
+  if (!activeUnit) return;
 
-/* 2. STAGE AREA */
-.stage-wrapper {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    margin-bottom: 12px;
+  const data = activeWords[(currentIndex - 1) % activeWords.length];
+  const sub = activeUnit.querySelector('.sub-translation');
+  if (!sub) return;
+
+  const txt = getTranslationFor(data, lang);
+  sub.textContent = txt ? txt : "";
+  sub.style.display = (txt && lang !== "de") ? "block" : "none";
 }
 
-.stage {
-    position: relative;
-    width: 320px;
-    height: 480px;
-    background: #080c18;
-    border-radius: 24px;
-    border: 3px solid var(--border);
-    box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
-    overflow: hidden;
-    transform: scale(1);
+/* =========================
+   CORE GAME
+   ========================= */
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
 }
 
-.stage::before,
-.stage::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100px;
-    z-index: 10;
-    pointer-events: none;
-}
-.stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
-.stage::after  { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
+function spawnWord(startPos) {
+  const reel = document.getElementById('reel');
+  const data = activeWords[currentIndex % activeWords.length];
 
-/* --- LANGUAGE BUTTON (inside stage, top-left) --- */
-.lang-toggle {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 30;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    border: 1px solid rgba(36, 51, 92, 0.9);
-    background: rgba(18, 25, 45, 0.35);
-    color: var(--text);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    transition: opacity 220ms ease, transform 120ms ease, background 220ms ease, border-color 220ms ease;
-    opacity: 1;
-    pointer-events: auto;
-    font-size: 18px;
-    line-height: 1;
-}
-.lang-toggle:active { transform: scale(0.96); }
-.lang-toggle.is-dim { opacity: 0.18; }
-.lang-toggle:hover {
-    background: rgba(18, 25, 45, 0.55);
-    border-color: rgba(163, 169, 255, 0.55);
+  const unit = document.createElement('div');
+  unit.className = `slot-unit ${startPos}`;
+  unit.innerHTML =
+    `<span class="article-reveal">${data.a}</span>` +
+    `<span class="word-span">${data.w}</span>` +
+    `<div class="sub-translation"></div>`;
+
+  reel.appendChild(unit);
+
+  if (startPos === "pos-active") {
+    activeUnit = unit;
+    refreshActiveTranslation();
+  } else {
+    const sub = unit.querySelector('.sub-translation');
+    if (sub) sub.style.display = "none";
+  }
+
+  return unit;
 }
 
-/* 3. CONTROLS */
-.controls-area {
-    flex: 0 0 90px;
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-}
+function handleChoice(choice) {
+  if (isLock || activeWords.length === 0) return;
 
-.btn {
-    flex: 1;
-    border-radius: 14px;
-    border: none;
-    font-size: 20px;
-    font-weight: 800;
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-    transition: transform 0.1s;
-    touch-action: manipulation;
-}
+  langBtn.classList.add('is-dim');
 
-.btn:active { transform: translateY(4px); box-shadow: none; }
-.btn.der { background: var(--der); }
-.btn.die { background: var(--die); }
-.btn.das { background: var(--das); }
+  const currentData = activeWords[(currentIndex - 1) % activeWords.length];
+  const correctArt = currentData.a;
+  const isRight = choice === correctArt;
 
-/* --- SLOT ANIMATIONS --- */
-.reel-container { position: relative; width: 100%; height: 100%; }
+  if (!isRight) {
+    activeUnit.classList.add('shake-active');
+    setTimeout(() => activeUnit.classList.remove('shake-active'), 300);
+    stats.bad++;
+    stats.streak = 0;
+    updateScore();
+    return;
+  }
 
-.slot-unit {
-    position: absolute;
-    left: 0; right: 0;
-    height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-    font-weight: 800;
+  isLock = true;
+  stats.ok++;
+  stats.streak++;
+  updateScore();
 
-    padding: 0 18px;
-    text-align: center;
-    gap: 10px;
-}
+  activeUnit.classList.add('resolved');
+  activeUnit.style.color = `var(--${correctArt})`;
 
-/* IMPORTANT: article and word use SAME font sizing rules */
-.article-reveal,
-.word-span {
-    display: inline-block;
-    white-space: nowrap;
-    line-height: 1.05;
-}
+  setTimeout(() => {
+    const nextInLine = document.querySelector('.pos-next');
 
-/* Word base size */
-.word-span { font-size: 42px; }
-
-/* Article base size (same as word when revealed) */
-.article-reveal {
-    font-size: 42px;
-
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
-    transition: 0.3s;
-    margin-right: 0;
-}
-.resolved .article-reveal {
-    opacity: 1;
-    max-width: 120px;
-    margin-right: 0;
-}
-
-/* ====== AUTO SHRINK: both article and word shrink together ====== */
-.slot-unit.pos-active .word-span,
-.slot-unit.pos-active .article-reveal {
-    font-size: clamp(22px, 6vw, 42px);
-}
-
-.slot-unit.pos-prev .word-span,
-.slot-unit.pos-prev .article-reveal {
-    font-size: clamp(16px, 3.6vw, 26px);
-}
-
-.slot-unit.pos-next .word-span,
-.slot-unit.pos-next .article-reveal {
-    font-size: clamp(14px, 3.2vw, 22px);
-}
-
-/* --- Translation subtitle (active only) --- */
-.sub-translation {
-    position: absolute;
-    left: 18px;
-    right: 18px;
-    top: 86px;
-    text-align: center;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(231, 236, 255, 0.55);
-    font-size: 11px;
-    line-height: 1.1;
-    pointer-events: none;
-}
-.slot-unit.pos-prev .sub-translation,
-.slot-unit.pos-next .sub-translation { display: none; }
-.resolved .sub-translation { display: none; }
-
-/* keep previous readable */
-.slot-unit.pos-prev { opacity: 0.78; filter: blur(0.6px); }
-.slot-unit.pos-next { opacity: 0.45; filter: blur(1.5px); }
-
-/* Base positions (480px stage) */
-.slot-unit.pos-next   { transform: translateY(20px)  scale(0.82); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1);    filter: blur(0); }
-.slot-unit.pos-prev   { transform: translateY(330px) scale(0.92); }
-.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6);  opacity: 0; filter: blur(0); }
-
-.shake-active { animation: shake 0.3s; }
-@keyframes shake {
-    0%, 100% { transform: translateY(170px) translateX(0); }
-    25% { transform: translateY(170px) translateX(-10px); }
-    75% { transform: translateY(170px) translateX(10px); }
-}
-
-/* --- HEIGHT-BASED SCALING (kept) --- */
-@media (max-height: 750px) {
-    .stage { transform: scale(0.85); }
-}
-@media (max-height: 600px) {
-    .stage { transform: scale(0.7); }
-    .game-hud { flex-basis: 40px; }
-    .stat-item .value { font-size: 16px; }
-}
-
-/* ===================================================================== */
-/* MOBILE */
-/* ===================================================================== */
-@media (max-width: 768px) {
-
-    header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        padding: 8px 15px 10px;
+    if (prevUnit) {
+      prevUnit.className = 'slot-unit pos-exit';
+      const toDelete = prevUnit;
+      setTimeout(() => toDelete.remove(), 700);
     }
 
-    .credits-top {
-        justify-content: flex-start;
-        font-size: 10px;
-    }
+    prevUnit = activeUnit;
+    prevUnit.className = 'slot-unit pos-prev resolved';
 
-    .header-row {
-        align-items: flex-start;
-    }
+    activeUnit = nextInLine;
+    activeUnit.className = 'slot-unit pos-active';
 
-    .app-title {
-        font-size: 18px;
-        line-height: 1.05;
-        margin: 0;
-    }
+    currentIndex++;
+    spawnWord("pos-next");
 
-    .stage { height: 420px; }
-
-    .lang-toggle {
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        top: 10px;
-        left: 10px;
-        font-size: 17px;
-    }
-
-    .chip {
-        padding: 5px 9px;
-        font-size: 12px;
-    }
-
-    .btn.der {
-        box-shadow:
-            0 0 12px rgba(75,139,255,0.55),
-            0 0 26px rgba(75,139,255,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-    .btn.die {
-        box-shadow:
-            0 0 12px rgba(255,108,174,0.55),
-            0 0 26px rgba(255,108,174,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-    .btn.das {
-        box-shadow:
-            0 0 12px rgba(255,216,75,0.55),
-            0 0 26px rgba(255,216,75,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-
-    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.82); }
-    .slot-unit.pos-active { transform: translateY(140px) scale(1);    }
-    .slot-unit.pos-prev   { transform: translateY(250px) scale(0.92); }
-    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
-
-    .shake-active { animation: shake-mobile 0.3s; }
-    @keyframes shake-mobile {
-        0%, 100% { transform: translateY(140px) translateX(0); }
-        25% { transform: translateY(140px) translateX(-10px); }
-        75% { transform: translateY(140px) translateX(10px); }
-    }
+    refreshActiveTranslation();
+    isLock = false;
+  }, 900);
 }
 
-/* ===================================================================== */
-/* DESKTOP ONLY: unify widths of HUD/STAGE/BUTTONS */
-/* ===================================================================== */
-@media (min-width: 769px) {
-
-    header {
-        padding-left: 0;
-        padding-right: 0;
-    }
-    header > * {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding-left: 18px;
-        padding-right: 18px;
-    }
-
-    main {
-        max-width: 1100px;
-        padding-top: 18px;
-    }
-
-    .game-hud,
-    .controls-area,
-    .stage-wrapper {
-        width: var(--col-w);
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .game-hud {
-        max-width: 720px;
-        height: 56px;
-        padding: 0 18px;
-        border-radius: 14px;
-        margin-bottom: 14px;
-    }
-
-    .stat-item { min-width: 140px; }
-    .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
-    .stat-item .value { font-size: 20px; }
-
-    .stage { width: var(--stage-w); }
-
-    .controls-area { gap: 14px; }
-    .btn {
-        font-size: 22px;
-        border-radius: 16px;
-        padding: 18px 0;
-    }
+function updateScore() {
+  document.getElementById('scoreOk').innerText = stats.ok;
+  document.getElementById('scoreBad').innerText = stats.bad;
+  document.getElementById('streak').innerText = stats.streak;
 }
+
+window.onkeydown = (e) => {
+  const key = e.key.toLowerCase();
+  if (key === 'a') handleChoice('der');
+  if (key === 's') handleChoice('die');
+  if (key === 'd') handleChoice('das');
+};
+
+setLangIndex(0);
+rebuildWordPool();
+updateScore();
+</script>
+</body>
+</html>
