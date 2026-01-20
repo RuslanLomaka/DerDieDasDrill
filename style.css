@@ -1,3 +1,4 @@
+```css
 /* --- GLOBAL RESET & VARIABLES --- */
 :root {
     --bg: #0b1020;
@@ -21,8 +22,6 @@ body {
     font-family: system-ui, -apple-system, sans-serif;
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
-
-    /* Force full height, no scroll */
     height: 100vh;
     width: 100vw;
     display: flex;
@@ -76,7 +75,7 @@ main {
     position: relative;
 }
 
-/* 1. HUD (Stats Bar) */
+/* --- HUD --- */
 .game-hud {
     flex: 0 0 50px;
     display: flex;
@@ -91,38 +90,34 @@ main {
 
 .stat-item { text-align: center; }
 .stat-item .label {
-    display: block;
     font-size: 9px;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: .5px;
 }
 .stat-item .value {
     font-size: 18px;
     font-weight: 800;
 }
 
-/* 2. STAGE AREA */
+/* --- STAGE --- */
 .stage-wrapper {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    margin-bottom: 15px; /* More space for buttons */
+    margin-bottom: 15px;
 }
 
 .stage {
     position: relative;
-
-    /* Fixed pixel size for consistent animation logic */
     width: 320px;
     height: 480px;
-
     background: #080c18;
     border-radius: 24px;
     border: 3px solid var(--border);
-    box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
+    box-shadow: inset 0 0 60px rgba(0,0,0,.9);
     overflow: hidden;
     transform: scale(1);
 }
@@ -146,9 +141,9 @@ main {
     background: linear-gradient(to top, #080c18 0%, transparent 100%);
 }
 
-/* 3. CONTROLS (Taller & Glowing) */
+/* --- CONTROLS --- */
 .controls-area {
-    flex: 0 0 90px; /* Desktop/default */
+    flex: 0 0 90px;
     display: flex;
     gap: 12px;
     width: 100%;
@@ -163,29 +158,24 @@ main {
     font-weight: 800;
     color: #fff;
     cursor: pointer;
-    transition: transform 0.1s;
-    touch-action: manipulation;
-
-    /* Text Shadow for better contrast */
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    position: relative;
-    overflow: hidden;
+    transition: transform .1s;
+    text-shadow: 0 2px 4px rgba(0,0,0,.3);
 }
 
-/* Default Glowing Effects (desktop + baseline) */
+/* Buttons */
 .btn.der {
     background: linear-gradient(to bottom right, #4b8bff, #2c5282);
-    box-shadow: 0 0 15px rgba(75, 139, 255, 0.4);
+    box-shadow: 0 0 15px rgba(75,139,255,.4);
     border-bottom: 4px solid #2b6cb0;
 }
 .btn.die {
     background: linear-gradient(to bottom right, #ff6cae, #97266d);
-    box-shadow: 0 0 15px rgba(255, 108, 174, 0.4);
+    box-shadow: 0 0 15px rgba(255,108,174,.4);
     border-bottom: 4px solid #b83280;
 }
 .btn.das {
     background: linear-gradient(to bottom right, #ffd84b, #b7791f);
-    box-shadow: 0 0 15px rgba(255, 216, 75, 0.4);
+    box-shadow: 0 0 15px rgba(255,216,75,.4);
     border-bottom: 4px solid #d69e2e;
 }
 
@@ -195,7 +185,7 @@ main {
     box-shadow: none;
 }
 
-/* --- SLOT ANIMATIONS --- */
+/* --- SLOT --- */
 .reel-container {
     position: relative;
     width: 100%;
@@ -210,7 +200,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: all .6s cubic-bezier(.25,1,.5,1);
     font-weight: 800;
 }
 
@@ -218,10 +208,8 @@ main {
     opacity: 0;
     max-width: 0;
     overflow: hidden;
-    white-space: nowrap;
-    transition: 0.3s;
+    transition: .3s;
     margin-right: 0;
-    display: inline-block;
 }
 .resolved .article-reveal {
     opacity: 1;
@@ -229,118 +217,73 @@ main {
     margin-right: 10px;
 }
 
-/* Animation Coordinates (Stage Height: 480px)
-   Word Height: 140px
-*/
-/* NEXT: Just peeking at the top */
 .slot-unit.pos-next {
-    transform: translateY(0px) scale(0.8);
-    opacity: 0.4;
+    transform: translateY(0) scale(.8);
+    opacity: .4;
     filter: blur(2px);
 }
 
-/* ACTIVE: Slightly above center (130px) to leave room for history below */
 .slot-unit.pos-active {
-    transform: translateY(130px) scale(1);
-    opacity: 1;
-    filter: blur(0);
+    transform: translateY(130px);
     font-size: 42px;
 }
 
-/* PREV: Sits at bottom (300px), fully visible inside the 480px container */
 .slot-unit.pos-prev {
-    transform: translateY(300px) scale(0.85);
-    opacity: 0.6;
+    transform: translateY(300px) scale(.85);
+    opacity: .6;
     filter: blur(1px);
 }
 
-/* EXIT: Finally drops off screen */
 .slot-unit.pos-exit {
-    transform: translateY(500px) scale(0.6);
+    transform: translateY(500px) scale(.6);
     opacity: 0;
 }
 
-/* Shake Animation (Centered on new Active pos) */
-.shake-active { animation: shake 0.3s; }
+/* --- SHAKE --- */
+.shake-active { animation: shake .3s; }
 @keyframes shake {
-    0%, 100% { transform: translateY(130px) translateX(0); }
+    0%,100% { transform: translateY(130px); }
     25% { transform: translateY(130px) translateX(-10px); }
     75% { transform: translateY(130px) translateX(10px); }
 }
 
-.credits {
-    position: fixed;
-    bottom: 2px;
-    right: 5px;
-    font-size: 8px;
-    color: #333;
-    z-index: 5;
-    pointer-events: none;
-}
-.credits a {
-    color: #444;
-    pointer-events: auto;
-}
-
-/* --- MOBILE RESPONSIVE SCALING (existing) --- */
+/* --- MOBILE SCALING (existing) --- */
 @media (max-height: 750px) {
-    .stage { transform: scale(0.85); }
+    .stage { transform: scale(.85); }
 }
 @media (max-height: 600px) {
-    .stage { transform: scale(0.7); }
+    .stage { transform: scale(.7); }
     .game-hud { flex-basis: 40px; }
     .stat-item .value { font-size: 16px; }
 }
 
-/* ===================================================================== */
-/* === MOBILE-ONLY UX UPGRADES (no desktop changes) ===================== */
-/* ===================================================================== */
+/* === MOBILE ONLY: REQUESTED EDITS === */
 @media (max-width: 768px) {
 
-    /* Buttons a bit higher (taller controls area) */
-    .controls-area {
-        flex: 0 0 110px;   /* was 90px */
-        gap: 12px;
-        padding-bottom: 8px;
-    }
+    /* buttons a bit higher */
+    .controls-area { flex: 0 0 110px; }
 
-    .btn {
-        font-size: 24px;
-        border-radius: 20px;
-    }
-
-    /* Stronger neon glow per gender color */
+    /* neon glow */
     .btn.der {
-        box-shadow:
-            0 0 12px rgba(75, 139, 255, 0.85),
-            0 0 28px rgba(75, 139, 255, 0.60),
-            0 0 55px rgba(75, 139, 255, 0.25);
+        box-shadow: 0 0 10px rgba(75,139,255,.85),
+                    0 0 26px rgba(75,139,255,.6);
     }
-
     .btn.die {
-        box-shadow:
-            0 0 12px rgba(255, 108, 174, 0.85),
-            0 0 28px rgba(255, 108, 174, 0.60),
-            0 0 55px rgba(255, 108, 174, 0.25);
+        box-shadow: 0 0 10px rgba(255,108,174,.85),
+                    0 0 26px rgba(255,108,174,.6);
     }
-
     .btn.das {
-        box-shadow:
-            0 0 12px rgba(255, 216, 75, 0.85),
-            0 0 28px rgba(255, 216, 75, 0.60),
-            0 0 55px rgba(255, 216, 75, 0.25);
+        box-shadow: 0 0 10px rgba(255,216,75,.85),
+                    0 0 26px rgba(255,216,75,.6);
     }
 
-    /* Keep previous word visible: don't slide it too far down */
+    /* keep previous word visible */
     .slot-unit.pos-prev {
-        transform: translateY(260px) scale(0.88); /* was 300px */
-        opacity: 0.7;
-        filter: blur(1px);
+        transform: translateY(260px) scale(.85);
     }
 
-    /* Exit still exits, but not insanely far (better with scaled stage) */
     .slot-unit.pos-exit {
-        transform: translateY(420px) scale(0.7);  /* was 500px */
-        opacity: 0;
+        transform: translateY(420px) scale(.6);
     }
 }
+```
