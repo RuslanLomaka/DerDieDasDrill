@@ -1,3 +1,4 @@
+
 /* --- GLOBAL RESET & VARIABLES --- */
 :root {
     --bg: #0b1020;
@@ -11,6 +12,10 @@
     --das: #ffd84b;
     --border: #24335c;
     --accent: #a3a9ff;
+
+    /* NEW: unified column width for stage/hud/buttons */
+    --col-w: 520px;
+    --stage-w: 380px; /* wider stage to reduce long-word overflow */
 }
 
 * { box-sizing: border-box; }
@@ -207,6 +212,31 @@ main {
     justify-content: center;
     transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     font-weight: 800;
+
+    /* NEW: prevent overflow + allow clean shrinking */
+    padding: 0 18px;
+    text-align: center;
+}
+
+.word-span {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis; /* last-resort safety */
+    white-space: nowrap;
+
+    /* NEW: auto-fit long words without JS */
+    font-size: clamp(22px, 6vw, 42px);
+    line-height: 1.05;
+}
+
+.slot-unit.pos-prev .word-span {
+    font-size: clamp(16px, 3.5vw, 26px); /* smaller but readable */
+    opacity: 0.95;
+}
+
+.slot-unit.pos-next .word-span {
+    font-size: clamp(14px, 3vw, 22px);
 }
 
 /* hide article until resolved */
@@ -218,6 +248,9 @@ main {
     transition: 0.3s;
     margin-right: 0;
     display: inline-block;
+
+    /* NEW: keep article from stretching layout */
+    flex: 0 0 auto;
 }
 .resolved .article-reveal {
     opacity: 1;
@@ -227,11 +260,8 @@ main {
 
 /* Base positions (480px stage) */
 .slot-unit.pos-next   { transform: translateY(20px)  scale(0.82); opacity: 0.45; filter: blur(1.5px); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1);    opacity: 1;    filter: blur(0);    font-size: 42px; }
-
-/* UPDATED: prev is more readable (less blur, less shrink, more opacity) */
+.slot-unit.pos-active { transform: translateY(170px) scale(1);    opacity: 1;    filter: blur(0); }
 .slot-unit.pos-prev   { transform: translateY(330px) scale(0.92); opacity: 0.78; filter: blur(0.6px); }
-
 .slot-unit.pos-exit   { transform: translateY(500px) scale(0.6);  opacity: 0; }
 
 .shake-active { animation: shake 0.3s; }
@@ -252,7 +282,7 @@ main {
 }
 
 /* ===================================================================== */
-/* MOBILE: keep as-is (only tune readability of prev word) */
+/* MOBILE */
 /* ===================================================================== */
 @media (max-width: 768px) {
 
@@ -300,14 +330,8 @@ main {
     }
 
     .slot-unit.pos-next   { transform: translateY(10px)  scale(0.82); opacity: 0.45; filter: blur(1.5px); }
-    .slot-unit.pos-active { transform: translateY(140px) scale(1);    opacity: 1;    filter: blur(0);    font-size: 42px; }
-
-    /* UPDATED (mobile): prev readable AND stays inside 420px stage
-       word height 140, so Y must be <= 280.
-       250 + 140 = 390 <= 420 ✅
-    */
+    .slot-unit.pos-active { transform: translateY(140px) scale(1);    opacity: 1;    filter: blur(0); }
     .slot-unit.pos-prev   { transform: translateY(250px) scale(0.92); opacity: 0.78; filter: blur(0.6px); }
-
     .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
 
     .shake-active { animation: shake-mobile 0.3s; }
@@ -319,7 +343,7 @@ main {
 }
 
 /* ===================================================================== */
-/* DESKTOP ONLY: keep scoreboard nice */
+/* DESKTOP ONLY: unify widths of HUD/STAGE/BUTTONS */
 /* ===================================================================== */
 @media (min-width: 769px) {
 
@@ -339,25 +363,39 @@ main {
         padding-top: 18px;
     }
 
-    .game-hud {
-        max-width: 720px;
+    /* ONE COLUMN width for all three */
+    .game-hud,
+    .controls-area,
+    .stage-wrapper {
+        width: var(--col-w);
         margin-left: auto;
         margin-right: auto;
+    }
+
+    .game-hud {
         height: 56px;
         padding: 0 18px;
         border-radius: 14px;
+        margin-bottom: 14px;
     }
 
     .stat-item { min-width: 140px; }
     .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
     .stat-item .value { font-size: 20px; }
 
-    .stage-wrapper { margin-top: 6px; margin-bottom: 14px; }
+    /* wider stage to fit long words */
+    .stage {
+        width: var(--stage-w);
+    }
 
+    /* buttons match column width and are evenly sized */
     .controls-area {
-        max-width: 520px;
-        margin-left: auto;
-        margin-right: auto;
         gap: 14px;
     }
+    .btn {
+        font-size: 22px;
+        border-radius: 16px;
+        padding: 18px 0;
+    }
 }
+
