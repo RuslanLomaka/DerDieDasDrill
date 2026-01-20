@@ -152,13 +152,13 @@ main {
 @media (max-height: 750px) {
     /* Shrink the slot machine if the screen is short */
     .stage {
-        transform: scale(0.85);
+        transform: scale(0.6);
     }
 }
 @media (max-height: 600px) {
     /* Shrink even more for very small screens */
     .stage {
-        transform: scale(0.7);
+        transform: scale(0.6);
     }
     .game-hud { flex-basis: 40px; }
     .stat-item .value { font-size: 16px; }
