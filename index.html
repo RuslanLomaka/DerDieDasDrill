@@ -9,19 +9,18 @@
 <body>
 
 <div class="credits">
-    Created by Ruslan Lomaka &nbsp;|&nbsp; 
-    <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank">LinkedIn</a> &nbsp;|&nbsp; 
-    <a href="https://github.com/RuslanLomaka/DerDieDasDrill" target="_blank">GitHub Repo</a>
-</div>
+        Created by Ruslan Lomaka | 
+        <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank">LinkedIn</a>
+    </div>
 
 <header>
     <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
     <div class="controls-top">
         <select class="level-select" id="levelSelector">
-            <option value="A1">Level A1 (Basic)</option>
-            <option value="A2">Level A2 (Daily)</option>
-            <option value="B1">Level B1 (Interm.)</option>
-            <option value="B2">Level B2 (Pro)</option>
+            <option value="A1">Level A1</option>
+            <option value="A2">Level A2</option>
+            <option value="B1">Level B1</option>
+            <option value="B2">Level B2</option>
             <option value="ALL">Mix All</option>
         </select>
         <button class="pill" onclick="location.reload()">Reset</button>
@@ -29,20 +28,24 @@
 </header>
 
 <main>
-    <section>
+    <div class="game-hud mobile-only">
+        <div class="stat-pill">Streak: <span id="streakMobile" style="color:var(--accent)">0</span></div>
+        <div class="stat-pill">Score: <span id="scoreOkMobile" style="color:var(--ok)">0</span>/<span id="scoreBadMobile" style="color:var(--bad)">0</span></div>
+    </div>
+
+    <section class="game-area">
         <div class="stage">
             <div id="reel" class="reel-container"></div>
         </div>
+        
         <div class="controls-area">
-            <div class="btnrow">
-                <button class="btn der" onclick="handleChoice('der')">der</button>
-                <button class="btn die" onclick="handleChoice('die')">die</button>
-                <button class="btn das" onclick="handleChoice('das')">das</button>
-            </div>
+            <button class="btn der" onclick="handleChoice('der')">der</button>
+            <button class="btn die" onclick="handleChoice('die')">die</button>
+            <button class="btn das" onclick="handleChoice('das')">das</button>
         </div>
     </section>
 
-    <aside>
+    <aside class="desktop-only">
         <div class="stat-box">
             <div class="stat-label">Richtig / Falsch</div>
             <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
@@ -52,8 +55,8 @@
             <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
         </div>
         <div class="stat-box" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
-            <b style="color:var(--text)">Vokabeln im Deck:</b><br>
-            <span id="levelCount">0</span> Wörter geladen.
+            <b style="color:var(--text)">Vokabeln:</b><br>
+            <span id="levelCount">0</span> Wörter.
         </div>
     </aside>
 </main>
