@@ -9,17 +9,17 @@
 <body>
 
 <header>
+    <div class="credits-top">
+        <span>Created by Ruslan Lomaka</span>
+        <span style="opacity:.55;">|</span>
+        <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+
     <h2 style="color:var(--accent); margin:0; font-size: 20px;">
         Slot <span style="font-weight: 300;">Deutsch</span>
     </h2>
 
-    <div class="controls-top" style="display:flex; align-items:center; gap:10px;">
-        <div class="credits-top">
-            <span>Created by Ruslan Lomaka</span>
-            <span style="opacity:.55;">|</span>
-            <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank" rel="noopener">LinkedIn</a>
-        </div>
-
+    <div class="controls-top">
         <select class="level-select" id="levelSelector">
             <option value="A1">Level A1</option>
             <option value="A2">Level A2</option>
@@ -27,7 +27,6 @@
             <option value="B2">Level B2</option>
             <option value="ALL">Mix All</option>
         </select>
-
         <button class="pill" onclick="location.reload()">Reset</button>
     </div>
 </header>
