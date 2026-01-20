@@ -1,3 +1,465 @@
+```css
+/* --- GLOBAL RESET & VARIABLES --- */
+:root {
+    --bg: #0b1020;
+    --card: #12192d;
+    --muted: #a0aec0;
+    --text: #e7ecff;
+    --ok: #36c689;
+    --bad: #ff6470;
+    --der: #4b8bff;
+    --die: #ff6cae;
+    --das: #ffd84b;
+    --border: #24335c;
+    --accent: #a3a9ff;
+
+    --col-w: 520px;
+    --stage-w: 380px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
+    color: var(--text);
+
+    min-height: 100vh;
+    height: 100dvh;
+
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* --- HEADER --- */
+header {
+    width: 100%;
+    padding: 8px 15px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: rgba(11, 16, 32, 0.95);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+}
+
+.header-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.controls-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.credits-top {
+    font-size: 11px;
+    color: rgba(231, 236, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    line-height: 1;
+}
+.credits-top a {
+    color: rgba(163, 169, 255, 0.9);
+    text-decoration: none;
+    pointer-events: auto;
+}
+.credits-top a:hover { text-decoration: underline; }
+
+.level-select {
+    background: #1a2340;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    outline: none;
+}
+
+.pill {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* --- MAIN CONTAINER --- */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 10px;
+    position: relative;
+    justify-content: flex-start;
+}
+
+/* 1. HUD */
+.game-hud {
+    flex: 0 0 50px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+.stat-item { text-align: center; min-width: 90px; }
+.stat-item .label {
+    display: block;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stat-item .value {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+/* 2. STAGE AREA */
+.stage-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.stage {
+    position: relative;
+    width: 320px;
+    height: 480px;
+    background: #080c18;
+    border-radius: 24px;
+    border: 3px solid var(--border);
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
+    overflow: hidden;
+    transform: scale(1);
+}
+
+.stage::before,
+.stage::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100px;
+    z-index: 10;
+    pointer-events: none;
+}
+.stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
+.stage::after  { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
+
+/* --- LANGUAGE BUTTON (inside stage, top-left) --- */
+.lang-toggle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 30;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(36, 51, 92, 0.9);
+    background: rgba(18, 25, 45, 0.35);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 220ms ease, transform 120ms ease, background 220ms ease, border-color 220ms ease;
+    opacity: 1;
+    pointer-events: auto;
+    font-size: 18px;
+    line-height: 1;
+}
+.lang-toggle:active { transform: scale(0.96); }
+.lang-toggle.is-dim { opacity: 0.18; }
+.lang-toggle:hover {
+    background: rgba(18, 25, 45, 0.55);
+    border-color: rgba(163, 169, 255, 0.55);
+}
+
+/* 3. CONTROLS */
+.controls-area {
+    flex: 0 0 90px;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.btn {
+    flex: 1;
+    border-radius: 14px;
+    border: none;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+    transition: transform 0.1s;
+    touch-action: manipulation;
+}
+
+.btn:active { transform: translateY(4px); box-shadow: none; }
+.btn.der { background: var(--der); }
+.btn.die { background: var(--die); }
+.btn.das { background: var(--das); }
+
+/* --- SLOT ANIMATIONS --- */
+.reel-container { position: relative; width: 100%; height: 100%; }
+
+.slot-unit {
+    position: absolute;
+    left: 0; right: 0;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    font-weight: 800;
+
+    padding: 0 18px;
+    text-align: center;
+    gap: 10px;
+}
+
+/* IMPORTANT: article and word use SAME font sizing rules */
+.article-reveal,
+.word-span {
+    display: inline-block;
+    white-space: nowrap;
+    line-height: 1.05;
+}
+
+/* Word base size */
+.word-span { font-size: 42px; }
+
+/* Article base size (same as word when revealed) */
+.article-reveal {
+    font-size: 42px;
+
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transition: 0.3s;
+    margin-right: 0;
+}
+.resolved .article-reveal {
+    opacity: 1;
+    max-width: 120px;
+    margin-right: 0;
+}
+
+/* ====== AUTO SHRINK: both article and word shrink together ====== */
+.slot-unit.pos-active .word-span,
+.slot-unit.pos-active .article-reveal {
+    font-size: clamp(22px, 6vw, 42px);
+}
+
+.slot-unit.pos-prev .word-span,
+.slot-unit.pos-prev .article-reveal {
+    font-size: clamp(16px, 3.6vw, 26px);
+}
+
+.slot-unit.pos-next .word-span,
+.slot-unit.pos-next .article-reveal {
+    font-size: clamp(14px, 3.2vw, 22px);
+}
+
+/* --- Translation subtitle (active only) --- */
+.sub-translation {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 86px;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(231, 236, 255, 0.55);
+    font-size: 11px;
+    line-height: 1.1;
+    pointer-events: none;
+}
+.slot-unit.pos-prev .sub-translation,
+.slot-unit.pos-next .sub-translation { display: none; }
+.resolved .sub-translation { display: none; }
+
+/* keep previous readable */
+.slot-unit.pos-prev { opacity: 0.78; filter: blur(0.6px); }
+.slot-unit.pos-next { opacity: 0.45; filter: blur(1.5px); }
+
+/* Base positions (480px stage) */
+.slot-unit.pos-next   { transform: translateY(20px)  scale(0.82); }
+.slot-unit.pos-active { transform: translateY(170px) scale(1);    filter: blur(0); }
+.slot-unit.pos-prev   { transform: translateY(330px) scale(0.92); }
+.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6);  opacity: 0; filter: blur(0); }
+
+.shake-active { animation: shake 0.3s; }
+@keyframes shake {
+    0%, 100% { transform: translateY(170px) translateX(0); }
+    25% { transform: translateY(170px) translateX(-10px); }
+    75% { transform: translateY(170px) translateX(10px); }
+}
+
+/* --- HEIGHT-BASED SCALING (kept) --- */
+@media (max-height: 750px) {
+    .stage { transform: scale(0.85); }
+}
+@media (max-height: 600px) {
+    .stage { transform: scale(0.7); }
+    .game-hud { flex-basis: 40px; }
+    .stat-item .value { font-size: 16px; }
+}
+
+/* ===================================================================== */
+/* MOBILE */
+/* ===================================================================== */
+@media (max-width: 768px) {
+
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 15px 10px;
+    }
+
+    .credits-top {
+        justify-content: flex-start;
+        font-size: 10px;
+    }
+
+    .header-row {
+        align-items: flex-start;
+    }
+
+    .app-title {
+        font-size: 18px;
+        line-height: 1.05;
+        margin: 0;
+    }
+
+    .stage { height: 420px; }
+
+    .lang-toggle {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        top: 10px;
+        left: 10px;
+        font-size: 17px;
+    }
+
+    .btn.der {
+        box-shadow:
+            0 0 12px rgba(75,139,255,0.55),
+            0 0 26px rgba(75,139,255,0.35),
+            0 4px 0 rgba(0,0,0,0.3);
+    }
+    .btn.die {
+        box-shadow:
+            0 0 12px rgba(255,108,174,0.55),
+            0 0 26px rgba(255,108,174,0.35),
+            0 4px 0 rgba(0,0,0,0.3);
+    }
+    .btn.das {
+        box-shadow:
+            0 0 12px rgba(255,216,75,0.55),
+            0 0 26px rgba(255,216,75,0.35),
+            0 4px 0 rgba(0,0,0,0.3);
+    }
+
+    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.82); }
+    .slot-unit.pos-active { transform: translateY(140px) scale(1);    }
+    .slot-unit.pos-prev   { transform: translateY(250px) scale(0.92); }
+    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
+
+    .shake-active { animation: shake-mobile 0.3s; }
+    @keyframes shake-mobile {
+        0%, 100% { transform: translateY(140px) translateX(0); }
+        25% { transform: translateY(140px) translateX(-10px); }
+        75% { transform: translateY(140px) translateX(10px); }
+    }
+}
+
+/* ===================================================================== */
+/* DESKTOP ONLY: unify widths of HUD/STAGE/BUTTONS */
+/* ===================================================================== */
+@media (min-width: 769px) {
+
+    header {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    header > * {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    main {
+        max-width: 1100px;
+        padding-top: 18px;
+    }
+
+    .game-hud,
+    .controls-area,
+    .stage-wrapper {
+        width: var(--col-w);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .game-hud {
+        max-width: 720px;
+        height: 56px;
+        padding: 0 18px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+    }
+
+    .stat-item { min-width: 140px; }
+    .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
+    .stat-item .value { font-size: 20px; }
+
+    .stage { width: var(--stage-w); }
+
+    .controls-area { gap: 14px; }
+    .btn {
+        font-size: 22px;
+        border-radius: 16px;
+        padding: 18px 0;
+    }
+}
+```
+
+```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -30,7 +492,7 @@
                 <option value="B2">Level B2</option>
                 <option value="ALL">Mix All</option>
             </select>
-            <button class="pill" onclick="location.reload()">Reset</button>
+            <button class="pill" id="resetBtn" onclick="location.reload()">Reset</button>
         </div>
     </div>
 </header>
@@ -38,26 +500,24 @@
 <main>
     <div class="game-hud">
         <div class="stat-item">
-            <span class="label">Streak</span>
+            <span class="label" id="labelStreak">Streak</span>
             <span class="value" id="streak" style="color:var(--accent)">0</span>
         </div>
         <div class="stat-item">
-            <span class="label">Score</span>
+            <span class="label" id="labelScore">Score</span>
             <span class="value">
                 <span id="scoreOk" style="color:var(--ok)">0</span> : <span id="scoreBad" style="color:var(--bad)">0</span>
             </span>
         </div>
         <div class="stat-item">
-            <span class="label">Words</span>
+            <span class="label" id="labelWords">Words</span>
             <span class="value" id="levelCount" style="color: var(--muted)">0</span>
         </div>
     </div>
 
     <div class="stage-wrapper">
         <div class="stage">
-            <!-- NEW: language button inside stage -->
             <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
-
             <div id="reel" class="reel-container"></div>
         </div>
     </div>
@@ -80,50 +540,91 @@ let activeUnit = null;
 let prevUnit = null;
 
 const levelSelector = document.getElementById('levelSelector');
+const resetBtn = document.getElementById('resetBtn');
 
-/* =========================
-   NEW: language toggle button
-   ========================= */
+const ui = {
+    de: { streak: "Streak", score: "Score", words: "Words", reset: "Reset", level: "Level", mix: "Mix All" },
+    en: { streak: "Streak", score: "Score", words: "Words", reset: "Reset", level: "Level", mix: "Mix All" },
+    uk: { streak: "Серія", score: "Рахунок", words: "Слів", reset: "Скинути", level: "Рівень", mix: "Змішати" }
+};
+
 const langBtn = document.getElementById('langBtn');
 const LANGS = ["de", "en", "uk"];
-const LANG_FLAG = { de: "🇩🇪", en: "🇬🇧", uk: "🇺🇦" }; // can expand later
+const LANG_FLAG = { de: "🇩🇪", en: "🇬🇧", uk: "🇺🇦" };
 let currentLangIndex = 0;
+
+function currentLang() {
+    return LANGS[currentLangIndex];
+}
 
 function setLangIndex(idx) {
     currentLangIndex = (idx + LANGS.length) % LANGS.length;
-    const lang = LANGS[currentLangIndex];
+    const lang = currentLang();
     langBtn.textContent = LANG_FLAG[lang] || "🏳️";
+    applyUiLang(lang);
+    refreshActiveTranslation();
 }
 
 function bumpLang() {
     setLangIndex(currentLangIndex + 1);
-    // after click: fully visible
     langBtn.classList.remove('is-dim');
 }
 
 langBtn.addEventListener('click', bumpLang);
 langBtn.addEventListener('touchstart', () => langBtn.classList.remove('is-dim'), { passive: true });
 
-setLangIndex(0); // default DE
+function applyUiLang(lang) {
+    const t = ui[lang] || ui.de;
+
+    document.getElementById('labelStreak').textContent = t.streak;
+    document.getElementById('labelScore').textContent  = t.score;
+    document.getElementById('labelWords').textContent  = t.words;
+    resetBtn.textContent = t.reset;
+
+    // Update select labels without changing values
+    [...levelSelector.options].forEach(opt => {
+        const v = opt.value;
+        if (v === "ALL") opt.textContent = t.mix;
+        else opt.textContent = `${t.level} ${v}`;
+    });
+}
+
+function getTranslationFor(item, lang) {
+    if (!item) return "";
+    if (lang === "de") return "";
+    return item.t?.[lang] || "";
+}
+
+function refreshActiveTranslation() {
+    const lang = currentLang();
+    if (!activeUnit) return;
+    const data = activeWords[(currentIndex - 1) % activeWords.length];
+
+    const sub = activeUnit.querySelector('.sub-translation');
+    if (!sub) return;
+
+    const txt = getTranslationFor(data, lang);
+    sub.textContent = txt ? txt : "";
+    sub.style.display = (txt && lang !== "de") ? "block" : "none";
+}
 
 function loadLevel(level) {
-    if (level === "ALL") {
-        activeWords = [...rawData];
-    } else {
-        activeWords = rawData.filter(item => item.l === level);
-    }
+    if (level === "ALL") activeWords = [...rawData];
+    else activeWords = rawData.filter(item => item.l === level);
+
     document.getElementById('levelCount').innerText = activeWords.length;
     shuffle(activeWords);
     currentIndex = 0;
 
     document.getElementById('reel').innerHTML = '';
     prevUnit = null;
+
     spawnWord("pos-active");
     currentIndex++;
     spawnWord("pos-next");
 
-    // keep the button on top and visible after reload/spawn
     langBtn.classList.remove('is-dim');
+    refreshActiveTranslation();
 }
 
 function shuffle(a) {
@@ -136,11 +637,25 @@ function shuffle(a) {
 function spawnWord(startPos) {
     const reel = document.getElementById('reel');
     const data = activeWords[currentIndex % activeWords.length];
+
     const unit = document.createElement('div');
     unit.className = `slot-unit ${startPos}`;
-    unit.innerHTML = `<span class="article-reveal">${data.a}</span><span class="word-span">${data.w}</span>`;
+    unit.innerHTML =
+        `<span class="article-reveal">${data.a}</span>` +
+        `<span class="word-span">${data.w}</span>` +
+        `<div class="sub-translation"></div>`;
+
     reel.appendChild(unit);
-    if (startPos === "pos-active") activeUnit = unit;
+
+    if (startPos === "pos-active") {
+        activeUnit = unit;
+        refreshActiveTranslation();
+    } else {
+        // hide subtitle for non-active
+        const sub = unit.querySelector('.sub-translation');
+        if (sub) sub.style.display = "none";
+    }
+
     return unit;
 }
 
@@ -173,17 +688,25 @@ function handleChoice(choice) {
 
     setTimeout(() => {
         const nextInLine = document.querySelector('.pos-next');
+
         if (prevUnit) {
             prevUnit.className = 'slot-unit pos-exit';
             const toDelete = prevUnit;
             setTimeout(() => toDelete.remove(), 700);
         }
+
         prevUnit = activeUnit;
         prevUnit.className = 'slot-unit pos-prev resolved';
+
         activeUnit = nextInLine;
         activeUnit.className = 'slot-unit pos-active';
+
         currentIndex++;
         spawnWord("pos-next");
+
+        // update translation for the new active
+        refreshActiveTranslation();
+
         isLock = false;
     }, 900);
 }
@@ -203,8 +726,10 @@ window.onkeydown = (e) => {
     if (key === 'd') handleChoice('das');
 };
 
+setLangIndex(0);
 loadLevel("A1");
 updateScore();
 </script>
 </body>
 </html>
+```
