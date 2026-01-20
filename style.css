@@ -76,17 +76,6 @@ header {
 }
 .credits-top a:hover { text-decoration: underline; }
 
-.level-select {
-    background: #1a2340;
-    border: 1px solid var(--border);
-    color: var(--accent);
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    outline: none;
-}
-
 .pill {
     background: transparent;
     border: 1px solid var(--border);
@@ -95,6 +84,36 @@ header {
     border-radius: 8px;
     font-size: 12px;
     cursor: pointer;
+}
+
+/* --- LEVEL CHIPS (multi-select) --- */
+.level-chips {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.chip {
+    background: rgba(26, 35, 64, 0.55);
+    border: 1px solid rgba(36, 51, 92, 0.95);
+    color: rgba(231, 236, 255, 0.85);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 120ms ease, background 180ms ease, border-color 180ms ease, opacity 180ms ease;
+}
+.chip:active { transform: scale(0.98); }
+.chip:hover { border-color: rgba(163, 169, 255, 0.55); }
+
+.chip.active {
+    background: rgba(163, 169, 255, 0.18);
+    border-color: rgba(163, 169, 255, 0.75);
+    color: var(--text);
 }
 
 /* --- MAIN CONTAINER --- */
@@ -374,6 +393,11 @@ main {
         font-size: 17px;
     }
 
+    .chip {
+        padding: 5px 9px;
+        font-size: 12px;
+    }
+
     .btn.der {
         box-shadow:
             0 0 12px rgba(75,139,255,0.55),
@@ -452,4 +476,7 @@ main {
     .controls-area { gap: 14px; }
     .btn {
         font-size: 22px;
-        border-
+        border-radius: 16px;
+        padding: 18px 0;
+    }
+}
