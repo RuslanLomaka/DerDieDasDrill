@@ -248,4 +248,15 @@ main {
             0 0 26px rgba(255,216,75,0.35),
             0 4px 0 rgba(0,0,0,0.3);
     }
+
+    /* ANDROID CHROME: keep buttons fully visible above bottom UI */
+@media (max-width: 768px) {
+  body { padding-bottom: 18px; } /* extra buffer for Samsung/Chrome UI */
+  main { padding-bottom: 24px; } /* keeps controls from being cut */
+
+  .controls-area {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 }
