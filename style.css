@@ -14,26 +14,33 @@
 
     --col-w: 520px;
     --stage-w: 380px;
+
+    /* iOS Chrome/Safari bottom toolbar helper */
+    --ios-bar: 64px;
 }
 
 * { box-sizing: border-box; }
 
 html, body { height: 100%; }
 
+/* IMPORTANT: allow scrolling on mobile if needed */
 body {
     margin: 0;
     font-family: system-ui, -apple-system, sans-serif;
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
 
-    /* iOS stability */
     min-height: 100svh;
     height: 100dvh;
 
     width: 100vw;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+
+    /* was hidden -> made app unusable on iPhone */
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* --- HEADER --- */
@@ -120,7 +127,7 @@ header {
     color: var(--text);
 }
 
-/* --- MAIN CONTAINER (grid so buttons never get pushed off-screen) --- */
+/* --- MAIN CONTAINER (stack + allow scroll if needed) --- */
 main {
     flex: 1;
     width: 100%;
@@ -129,20 +136,18 @@ main {
     padding: 10px;
     position: relative;
 
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto; /* HUD | STAGE | BUTTONS */
+    display: flex;
+    flex-direction: column;
     gap: 10px;
 
-    /* leaves some room even when iOS shows bottom toolbar */
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-    min-height: 0;
+    /* ensure buttons are not behind iOS bottom toolbar */
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
 }
 
-/* iOS WebKit (Chrome on iPhone) bottom toolbar is NOT safe-area.
-   This lifts controls so they stay fully visible. */
+/* add extra breathing room specifically on iOS browsers */
 @supports (-webkit-touch-callout: none) {
     main {
-        padding-bottom: max(12px, env(safe-area-inset-bottom) + 64px);
+        padding-bottom: max(14px, env(safe-area-inset-bottom) + var(--ios-bar));
     }
 }
 
@@ -158,6 +163,7 @@ main {
     height: 50px;
 }
 
+/* allow HUD to wrap a bit on very tight widths */
 .stat-item { text-align: center; min-width: 90px; }
 .stat-item .label {
     display: block;
@@ -171,35 +177,35 @@ main {
     font-weight: 800;
 }
 
-/* 2. STAGE AREA (fills the middle row) */
+/* 2. STAGE AREA */
 .stage-wrapper {
-    min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
 }
 
+/* IMPORTANT: make stage SHORTER on mobile so it doesn't eat the screen */
 .stage {
     position: relative;
     width: min(320px, 92vw);
     height: 480px;
+
     background: #080c18;
     border-radius: 24px;
     border: 3px solid var(--border);
     box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
     overflow: hidden;
-    transform: scale(1);
 }
 
-/* fades should not cover too much on short stages */
+/* fades: smaller so stage doesn't look “all black” */
 .stage::before,
 .stage::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    height: 90px;
+    height: 80px;
     z-index: 10;
     pointer-events: none;
 }
@@ -237,22 +243,13 @@ main {
     border-color: rgba(163, 169, 255, 0.55);
 }
 
-/* 3. CONTROLS (always in last row) */
+/* 3. CONTROLS */
 .controls-area {
     display: flex;
     gap: 8px;
     width: 100%;
     height: 90px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
     align-items: stretch;
-}
-
-/* lift controls more on iPhone Chrome */
-@supports (-webkit-touch-callout: none) {
-    .controls-area {
-        padding-bottom: max(12px, env(safe-area-inset-bottom) + 64px);
-        height: 90px;
-    }
 }
 
 .btn {
@@ -291,10 +288,8 @@ main {
     gap: 10px;
 }
 
-/* better readability on iPhone (text looked “black”) */
-.slot-unit.pos-active {
-    text-shadow: 0 10px 24px rgba(0,0,0,0.65);
-}
+/* readability */
+.slot-unit.pos-active { text-shadow: 0 10px 24px rgba(0,0,0,0.65); }
 
 /* IMPORTANT: article and word use SAME font sizing rules */
 .article-reveal,
@@ -304,13 +299,10 @@ main {
     line-height: 1.05;
 }
 
-/* Word base size */
 .word-span { font-size: 42px; }
 
-/* Article base size (same as word when revealed) */
 .article-reveal {
     font-size: 42px;
-
     opacity: 0;
     max-width: 0;
     overflow: hidden;
@@ -325,19 +317,13 @@ main {
 
 /* ====== AUTO SHRINK: both article and word shrink together ====== */
 .slot-unit.pos-active .word-span,
-.slot-unit.pos-active .article-reveal {
-    font-size: clamp(22px, 6vw, 42px);
-}
+.slot-unit.pos-active .article-reveal { font-size: clamp(22px, 6vw, 42px); }
 
 .slot-unit.pos-prev .word-span,
-.slot-unit.pos-prev .article-reveal {
-    font-size: clamp(16px, 3.6vw, 26px);
-}
+.slot-unit.pos-prev .article-reveal { font-size: clamp(16px, 3.6vw, 26px); }
 
 .slot-unit.pos-next .word-span,
-.slot-unit.pos-next .article-reveal {
-    font-size: clamp(14px, 3.2vw, 22px);
-}
+.slot-unit.pos-next .article-reveal { font-size: clamp(14px, 3.2vw, 22px); }
 
 /* --- Translation subtitle (active only) --- */
 .sub-translation {
@@ -362,7 +348,7 @@ main {
 .slot-unit.pos-prev { opacity: 0.78; filter: blur(0.6px); }
 .slot-unit.pos-next { opacity: 0.45; filter: blur(1.5px); }
 
-/* Base positions (480px stage) */
+/* Base positions (default) */
 .slot-unit.pos-next   { transform: translateY(20px)  scale(0.82); }
 .slot-unit.pos-active { transform: translateY(170px) scale(1);    filter: blur(0); }
 .slot-unit.pos-prev   { transform: translateY(330px) scale(0.92); }
@@ -388,14 +374,8 @@ main {
         padding-top: max(8px, env(safe-area-inset-top));
     }
 
-    .credits-top {
-        justify-content: flex-start;
-        font-size: 10px;
-    }
-
-    .header-row {
-        align-items: flex-start;
-    }
+    .credits-top { justify-content: flex-start; font-size: 10px; }
+    .header-row { align-items: flex-start; }
 
     .app-title {
         font-size: 18px;
@@ -403,16 +383,13 @@ main {
         margin: 0;
     }
 
-    /* KEY FIX: stage must shrink to fit on iPhone when browser UI eats height */
+    /* IMPORTANT: shorter window */
     .stage {
-        height: clamp(280px, 44dvh, 420px);
+        height: clamp(240px, 36dvh, 360px);
+        border-radius: 22px;
     }
 
-    /* reduce fade heights so stage doesn't look “all black” */
-    .stage::before,
-    .stage::after {
-        height: 70px;
-    }
+    .stage::before, .stage::after { height: 60px; }
 
     .lang-toggle {
         width: 32px;
@@ -423,49 +400,22 @@ main {
         font-size: 17px;
     }
 
-    .chip {
-        padding: 5px 9px;
-        font-size: 12px;
-    }
+    .chip { padding: 5px 9px; font-size: 12px; }
 
-    /* buttons slightly smaller on short mobile screens */
-    .controls-area { height: 78px; }
+    .controls-area { height: 82px; }
+    .btn { font-size: 18px; }
 
-    .btn {
-        font-size: 18px;
-        border-radius: 14px;
-    }
-
-    .btn.der {
-        box-shadow:
-            0 0 12px rgba(75,139,255,0.55),
-            0 0 26px rgba(75,139,255,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-    .btn.die {
-        box-shadow:
-            0 0 12px rgba(255,108,174,0.55),
-            0 0 26px rgba(255,108,174,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-    .btn.das {
-        box-shadow:
-            0 0 12px rgba(255,216,75,0.55),
-            0 0 26px rgba(255,216,75,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-
-    /* keep slot positions consistent with shorter stage */
-    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.82); }
-    .slot-unit.pos-active { transform: translateY(120px) scale(1);    }
-    .slot-unit.pos-prev   { transform: translateY(220px) scale(0.92); }
-    .slot-unit.pos-exit   { transform: translateY(420px) scale(0.65); opacity: 0; }
+    /* slot positions adapted to shorter stage */
+    .slot-unit.pos-next   { transform: translateY(8px)  scale(0.82); }
+    .slot-unit.pos-active { transform: translateY(92px) scale(1);    }
+    .slot-unit.pos-prev   { transform: translateY(170px) scale(0.92); }
+    .slot-unit.pos-exit   { transform: translateY(360px) scale(0.65); opacity: 0; }
 
     .shake-active { animation: shake-mobile 0.3s; }
     @keyframes shake-mobile {
-        0%, 100% { transform: translateY(120px) translateX(0); }
-        25% { transform: translateY(120px) translateX(-10px); }
-        75% { transform: translateY(120px) translateX(10px); }
+        0%, 100% { transform: translateY(92px) translateX(0); }
+        25% { transform: translateY(92px) translateX(-10px); }
+        75% { transform: translateY(92px) translateX(10px); }
     }
 }
 
@@ -509,7 +459,7 @@ main {
     .stat-item .label { font-size: 10px; letter-spacing: 0.6px; }
     .stat-item .value { font-size: 20px; }
 
-    .stage { width: var(--stage-w); }
+    .stage { width: var(--stage-w); height: 480px; }
 
     .controls-area { gap: 14px; height: 90px; }
     .btn {
