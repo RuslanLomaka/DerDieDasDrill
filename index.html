@@ -2,7 +2,6 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <!-- iOS safe-area + stable viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Slot Deutsch</title>
   <link rel="stylesheet" href="style.css">
@@ -242,8 +241,10 @@ function spawnWord(startPos) {
   const unit = document.createElement('div');
   unit.className = `slot-unit ${startPos}`;
   unit.innerHTML =
-    `<span class="article-reveal">${data.a}</span>` +
-    `<span class="word-span">${data.w}</span>` +
+    `<div class="caption">` +
+      `<span class="article-reveal">${data.a}</span>` +
+      `<span class="word-span">${data.w}</span>` +
+    `</div>` +
     `<div class="sub-translation"></div>`;
 
   reel.appendChild(unit);
@@ -327,4 +328,3 @@ updateScore();
 </script>
 </body>
 </html>
- 
