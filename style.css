@@ -171,6 +171,41 @@ main {
 .stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
 .stage::after  { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
 
+/* --- LANGUAGE BUTTON (inside stage, top-left) --- */
+.lang-toggle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 30;                 /* above reel + fades */
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;         /* square-ish, soft */
+    border: 1px solid rgba(36, 51, 92, 0.9);
+    background: rgba(18, 25, 45, 0.35);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 220ms ease, transform 120ms ease, background 220ms ease, border-color 220ms ease;
+    opacity: 1;                  /* fully visible when active */
+    pointer-events: auto;
+    font-size: 18px;
+    line-height: 1;
+}
+.lang-toggle:active {
+    transform: scale(0.96);
+}
+.lang-toggle.is-dim {
+    opacity: 0.18;               /* almost transparent after der/die/das */
+}
+.lang-toggle:hover {
+    background: rgba(18, 25, 45, 0.55);
+    border-color: rgba(163, 169, 255, 0.55);
+}
+
 /* 3. CONTROLS */
 .controls-area {
     flex: 0 0 90px;
@@ -227,7 +262,6 @@ main {
 
 /* Word base size */
 .word-span {
-    /* normal size */
     font-size: 42px;
 }
 
@@ -248,7 +282,6 @@ main {
 }
 
 /* ====== AUTO SHRINK: only when the combined text would overflow ======
-   We use clamp so it can shrink, but NOT always.
    Both article and word shrink together.
 */
 .slot-unit.pos-active .word-span,
@@ -321,6 +354,16 @@ main {
     }
 
     .stage { height: 420px; }
+
+    /* slightly smaller toggle on mobile */
+    .lang-toggle {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        top: 10px;
+        left: 10px;
+        font-size: 17px;
+    }
 
     .btn.der {
         box-shadow:
