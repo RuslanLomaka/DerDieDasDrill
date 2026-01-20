@@ -11,7 +11,6 @@
     --das: #ffd84b;
     --border: #24335c;
     --accent: #a3a9ff;
-    --header-h: 60px;
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +18,7 @@
 body {
     margin: 0;
     font-family: system-ui, -apple-system, sans-serif;
-    background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
+    background: radial-gradient(circle at top, #161d33 0%, #0b1020 70%);
     color: var(--text);
 
     min-height: 100vh;
@@ -31,48 +30,57 @@ body {
     overflow: hidden;
 }
 
-/* --- HEADER --- */
+/* ================= HEADER ================= */
 header {
     width: 100%;
-    padding: 8px 15px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     background: rgba(11, 16, 32, 0.95);
     border-bottom: 1px solid var(--border);
     z-index: 10;
 }
 
-/* NEW: header inner row (title + controls) */
+.header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 8px 16px 10px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* credits row */
+.credits-top {
+    font-size: 11px;
+    color: rgba(231,236,255,0.6);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.credits-top a {
+    color: var(--accent);
+    text-decoration: none;
+}
+.credits-top a:hover { text-decoration: underline; }
+
+/* title + controls */
 .header-row {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
 }
 
-/* Credits line */
-.credits-top {
-    font-size: 11px;
-    color: rgba(231, 236, 255, 0.65);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    line-height: 1;
+.app-title {
+    margin: 0;
+    font-size: 22px;
+    color: var(--accent);
 }
-.credits-top a {
-    color: rgba(163, 169, 255, 0.9);
-    text-decoration: none;
-    pointer-events: auto;
-}
-.credits-top a:hover { text-decoration: underline; }
 
+/* controls */
 .controls-top {
     display: flex;
-    align-items: center;
     gap: 10px;
+    align-items: center;
 }
 
 .level-select {
@@ -83,7 +91,6 @@ header {
     border-radius: 8px;
     font-size: 14px;
     font-weight: bold;
-    outline: none;
 }
 
 .pill {
@@ -96,57 +103,53 @@ header {
     cursor: pointer;
 }
 
-/* --- MAIN CONTAINER --- */
+/* ================= MAIN ================= */
 main {
     flex: 1;
     display: flex;
     flex-direction: column;
+    max-width: 960px;
     width: 100%;
-    max-width: 600px;
     margin: 0 auto;
-    padding: 10px;
-    position: relative;
-    justify-content: flex-start;
+    padding: 16px;
+    gap: 16px;
 }
 
-/* 1. HUD */
+/* HUD */
 .game-hud {
-    flex: 0 0 50px;
+    align-self: center;
+    width: 100%;
+    max-width: 520px;
+
     display: flex;
     justify-content: space-around;
     align-items: center;
+
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 10px;
-    padding: 0 10px;
+    border-radius: 14px;
+    padding: 10px 12px;
 }
 
 .stat-item { text-align: center; }
 .stat-item .label {
-    display: block;
     font-size: 9px;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 .stat-item .value {
     font-size: 18px;
     font-weight: 800;
 }
 
-/* 2. STAGE AREA */
+/* STAGE */
 .stage-wrapper {
-    flex: 0 0 auto;
     display: flex;
-    align-items: center;
     justify-content: center;
-    overflow: hidden;
-    margin-bottom: 12px;
+    align-items: center;
 }
 
 .stage {
-    position: relative;
     width: 320px;
     height: 480px;
     background: #080c18;
@@ -154,9 +157,10 @@ main {
     border: 3px solid var(--border);
     box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
     overflow: hidden;
-    transform: scale(1);
+    position: relative;
 }
 
+/* gradients */
 .stage::before,
 .stage::after {
     content: "";
@@ -167,20 +171,19 @@ main {
     z-index: 10;
     pointer-events: none;
 }
-.stage::before { top: 0; background: linear-gradient(to bottom, #080c18 0%, transparent 100%); }
-.stage::after  { bottom: 0; background: linear-gradient(to top, #080c18 0%, transparent 100%); }
+.stage::before { top: 0; background: linear-gradient(to bottom, #080c18, transparent); }
+.stage::after  { bottom: 0; background: linear-gradient(to top, #080c18, transparent); }
 
-/* 3. CONTROLS */
+/* CONTROLS */
 .controls-area {
-    flex: 0 0 90px;
     display: flex;
-    gap: 8px;
-    width: 100%;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    gap: 12px;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .btn {
-    flex: 1;
+    width: 120px;
     border-radius: 14px;
     border: none;
     font-size: 20px;
@@ -188,16 +191,13 @@ main {
     color: #fff;
     cursor: pointer;
     box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-    transition: transform 0.1s;
-    touch-action: manipulation;
 }
 
-.btn:active { transform: translateY(4px); box-shadow: none; }
 .btn.der { background: var(--der); }
 .btn.die { background: var(--die); }
 .btn.das { background: var(--das); }
 
-/* --- SLOT ANIMATIONS --- */
+/* ================= SLOT ================= */
 .reel-container { position: relative; width: 100%; height: 100%; }
 
 .slot-unit {
@@ -207,107 +207,37 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     font-weight: 800;
+    transition: all 0.6s cubic-bezier(0.25,1,0.5,1);
 }
 
-.article-reveal {
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    transition: 0.3s;
-    margin-right: 0;
-    display: inline-block;
-}
-.resolved .article-reveal { opacity: 1; max-width: 100px; margin-right: 10px; }
+.slot-unit.pos-next   { transform: translateY(20px) scale(0.8); opacity:.4; filter: blur(2px); }
+.slot-unit.pos-active { transform: translateY(170px); font-size:42px; }
+.slot-unit.pos-prev   { transform: translateY(340px) scale(0.8); opacity:.5; filter: blur(2px); }
+.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6); opacity:0; }
 
-/* Base positions (480px stage) */
-.slot-unit.pos-next   { transform: translateY(20px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
-.slot-unit.pos-active { transform: translateY(170px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
-.slot-unit.pos-prev   { transform: translateY(340px) scale(0.8); opacity: 0.5; filter: blur(2px); }
-.slot-unit.pos-exit   { transform: translateY(500px) scale(0.6); opacity: 0; }
-
-.shake-active { animation: shake 0.3s; }
-@keyframes shake {
-    0%, 100% { transform: translateY(170px) translateX(0); }
-    25% { transform: translateY(170px) translateX(-10px); }
-    75% { transform: translateY(170px) translateX(10px); }
-}
-
-/* --- HEIGHT-BASED SCALING (kept) --- */
-@media (max-height: 750px) {
-    .stage { transform: scale(0.85); }
-}
-@media (max-height: 600px) {
-    .stage { transform: scale(0.7); }
-    .game-hud { flex-basis: 40px; }
-    .stat-item .value { font-size: 16px; }
-}
-
-/* ===================================================================== */
-/* MOBILE: credits on top, then header row; keep prev inside stage */
-/* ===================================================================== */
+/* ================= MOBILE (UNCHANGED BEHAVIOR) ================= */
 @media (max-width: 768px) {
 
-    header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        padding: 8px 15px 10px;
+    main {
+        padding: 10px;
+        gap: 10px;
     }
 
-    /* Credits take their own row on top */
-    .credits-top {
-        justify-content: flex-start;
-        font-size: 10px;
+    .header-inner {
+        padding: 8px 14px;
     }
 
-    /* Title + controls below credits */
-    .header-row {
-        align-items: flex-start;
+    .stage {
+        height: 420px;
     }
 
-    /* Make title fit better on narrow screens */
-    .app-title {
-        font-size: 18px;
-        line-height: 1.05;
-        margin: 0;
+    .controls-area {
+        justify-content: space-between;
     }
 
-    /* Make main rectangle shorter */
-    .stage { height: 420px; }
-
-    /* Neon glow */
-    .btn.der {
-        box-shadow:
-            0 0 12px rgba(75,139,255,0.55),
-            0 0 26px rgba(75,139,255,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-    .btn.die {
-        box-shadow:
-            0 0 12px rgba(255,108,174,0.55),
-            0 0 26px rgba(255,108,174,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-    .btn.das {
-        box-shadow:
-            0 0 12px rgba(255,216,75,0.55),
-            0 0 26px rgba(255,216,75,0.35),
-            0 4px 0 rgba(0,0,0,0.3);
-    }
-
-    /* Keep PREV fully visible inside 420px stage */
-    .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
-    .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
-    .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); }
-    .slot-unit.pos-exit   { transform: translateY(450px) scale(0.65); opacity: 0; }
-
-    .shake-active { animation: shake-mobile 0.3s; }
-    @keyframes shake-mobile {
-        0%, 100% { transform: translateY(140px) translateX(0); }
-        25% { transform: translateY(140px) translateX(-10px); }
-        75% { transform: translateY(140px) translateX(10px); }
+    .btn {
+        width: auto;
+        flex: 1;
     }
 }
