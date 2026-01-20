@@ -55,6 +55,9 @@
 
     <div class="stage-wrapper">
         <div class="stage">
+            <!-- NEW: language button inside stage -->
+            <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
+
             <div id="reel" class="reel-container"></div>
         </div>
     </div>
@@ -65,8 +68,6 @@
         <button class="btn das" onclick="handleChoice('das')">das</button>
     </div>
 </main>
-
-
 
 <script src="words.js"></script>
 <script>
@@ -79,6 +80,31 @@ let activeUnit = null;
 let prevUnit = null;
 
 const levelSelector = document.getElementById('levelSelector');
+
+/* =========================
+   NEW: language toggle button
+   ========================= */
+const langBtn = document.getElementById('langBtn');
+const LANGS = ["de", "en", "uk"];
+const LANG_FLAG = { de: "🇩🇪", en: "🇬🇧", uk: "🇺🇦" }; // can expand later
+let currentLangIndex = 0;
+
+function setLangIndex(idx) {
+    currentLangIndex = (idx + LANGS.length) % LANGS.length;
+    const lang = LANGS[currentLangIndex];
+    langBtn.textContent = LANG_FLAG[lang] || "🏳️";
+}
+
+function bumpLang() {
+    setLangIndex(currentLangIndex + 1);
+    // after click: fully visible
+    langBtn.classList.remove('is-dim');
+}
+
+langBtn.addEventListener('click', bumpLang);
+langBtn.addEventListener('touchstart', () => langBtn.classList.remove('is-dim'), { passive: true });
+
+setLangIndex(0); // default DE
 
 function loadLevel(level) {
     if (level === "ALL") {
@@ -95,6 +121,9 @@ function loadLevel(level) {
     spawnWord("pos-active");
     currentIndex++;
     spawnWord("pos-next");
+
+    // keep the button on top and visible after reload/spawn
+    langBtn.classList.remove('is-dim');
 }
 
 function shuffle(a) {
@@ -117,6 +146,10 @@ function spawnWord(startPos) {
 
 function handleChoice(choice) {
     if (isLock || activeWords.length === 0) return;
+
+    // after user clicks der/die/das: fade the language button
+    langBtn.classList.add('is-dim');
+
     const currentData = activeWords[(currentIndex - 1) % activeWords.length];
     const correctArt = currentData.a;
     const isRight = choice === correctArt;
