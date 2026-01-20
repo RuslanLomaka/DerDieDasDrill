@@ -2,16 +2,17 @@
 <html lang="de">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Slot Deutsch - Ultimate Edition</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="credits">
+
+<div class="credits">
     Created by Ruslan Lomaka &nbsp;|&nbsp; 
     <a href="https://www.linkedin.com/in/ruslan-lomaka/" target="_blank">LinkedIn</a> &nbsp;|&nbsp; 
     <a href="https://github.com/RuslanLomaka/DerDieDasDrill" target="_blank">GitHub Repo</a>
-  </div>
+</div>
 
 <header>
     <h2 style="color:var(--accent); margin:0;">Slot <span style="font-weight: 300;">Deutsch</span></h2>
@@ -28,41 +29,37 @@
 </header>
 
 <main>
-    <div class="game-hud">
-        <div class="stat-item">
-            <span class="label">Streak</span>
-            <span class="value" id="streak" style="color:var(--accent)">0</span>
-        </div>
-        <div class="stat-item">
-            <span class="label">Score</span>
-            <span class="value">
-                <span id="scoreOk" style="color:var(--ok)">0</span> : <span id="scoreBad" style="color:var(--bad)">0</span>
-            </span>
-        </div>
-        <div class="stat-item">
-            <span class="label">Level</span>
-            <span class="value" id="levelCount" style="font-size: 14px; color: var(--muted)">0</span>
-        </div>
-    </div>
-
-    <div class="stage-wrapper">
+    <section>
         <div class="stage">
             <div id="reel" class="reel-container"></div>
         </div>
-    </div>
+        <div class="controls-area">
+            <div class="btnrow">
+                <button class="btn der" onclick="handleChoice('der')">der</button>
+                <button class="btn die" onclick="handleChoice('die')">die</button>
+                <button class="btn das" onclick="handleChoice('das')">das</button>
+            </div>
+        </div>
+    </section>
 
-    <div class="controls-area">
-        <button class="btn der" onclick="handleChoice('der')">der</button>
-        <button class="btn die" onclick="handleChoice('die')">die</button>
-        <button class="btn das" onclick="handleChoice('das')">das</button>
-    </div>
+    <aside>
+        <div class="stat-box">
+            <div class="stat-label">Richtig / Falsch</div>
+            <div class="stat-value"><span id="scoreOk" style="color:var(--ok)">0</span> / <span id="scoreBad" style="color:var(--bad)">0</span></div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="streak" style="color:var(--accent)">0</div>
+        </div>
+        <div class="stat-box" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
+            <b style="color:var(--text)">Vokabeln im Deck:</b><br>
+            <span id="levelCount">0</span> Wörter geladen.
+        </div>
+    </aside>
 </main>
 
 <script src="words.js"></script>
-
 <script>
-// We don't need 'rawData' here because it's loaded from words.js
-
 let activeWords = [];
 let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
@@ -82,7 +79,6 @@ function loadLevel(level) {
     shuffle(activeWords);
     currentIndex = 0;
     
-    // Clear and reset the reel
     document.getElementById('reel').innerHTML = '';
     prevUnit = null;
     spawnWord("pos-active");
@@ -163,7 +159,6 @@ window.onkeydown = (e) => {
     if (key === 'd') handleChoice('das');
 };
 
-// Start default level
 loadLevel("A1");
 updateScore();
 </script>
