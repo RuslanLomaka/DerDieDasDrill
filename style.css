@@ -22,7 +22,6 @@ body {
     background: radial-gradient(circle at top, #161d33 0%, #0b1020 100%);
     color: var(--text);
 
-    /* Stable on real phones */
     min-height: 100vh;
     height: 100dvh;
 
@@ -34,15 +33,46 @@ body {
 
 /* --- HEADER --- */
 header {
-    flex: 0 0 var(--header-h);
     width: 100%;
-    padding: 0 15px;
+    padding: 8px 15px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: rgba(11, 16, 32, 0.95);
     border-bottom: 1px solid var(--border);
     z-index: 10;
+}
+
+/* NEW: header inner row (title + controls) */
+.header-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Credits line */
+.credits-top {
+    font-size: 11px;
+    color: rgba(231, 236, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    line-height: 1;
+}
+.credits-top a {
+    color: rgba(163, 169, 255, 0.9);
+    text-decoration: none;
+    pointer-events: auto;
+}
+.credits-top a:hover { text-decoration: underline; }
+
+.controls-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .level-select {
@@ -65,22 +95,6 @@ header {
     font-size: 12px;
     cursor: pointer;
 }
-
-/* --- CREDITS (Iteration 1) --- */
-.credits-top {
-    font-size: 11px;
-    color: rgba(231, 236, 255, 0.65);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    line-height: 1;
-}
-.credits-top a {
-    color: rgba(163, 169, 255, 0.85);
-    text-decoration: none;
-}
-.credits-top a:hover { text-decoration: underline; }
 
 /* --- MAIN CONTAINER --- */
 main {
@@ -232,12 +246,39 @@ main {
 }
 
 /* ===================================================================== */
-/* MOBILE: shorter rectangle + KEEP PREV WORD INSIDE (never below bottom) */
+/* MOBILE: credits on top, then header row; keep prev inside stage */
 /* ===================================================================== */
 @media (max-width: 768px) {
 
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 15px 10px;
+    }
+
+    /* Credits take their own row on top */
+    .credits-top {
+        justify-content: flex-start;
+        font-size: 10px;
+    }
+
+    /* Title + controls below credits */
+    .header-row {
+        align-items: flex-start;
+    }
+
+    /* Make title fit better on narrow screens */
+    .app-title {
+        font-size: 18px;
+        line-height: 1.05;
+        margin: 0;
+    }
+
+    /* Make main rectangle shorter */
     .stage { height: 420px; }
 
+    /* Neon glow */
     .btn.der {
         box-shadow:
             0 0 12px rgba(75,139,255,0.55),
@@ -257,6 +298,7 @@ main {
             0 4px 0 rgba(0,0,0,0.3);
     }
 
+    /* Keep PREV fully visible inside 420px stage */
     .slot-unit.pos-next   { transform: translateY(10px)  scale(0.8); opacity: 0.4; filter: blur(2px); }
     .slot-unit.pos-active { transform: translateY(140px) scale(1);   opacity: 1;   filter: blur(0);  font-size: 42px; }
     .slot-unit.pos-prev   { transform: translateY(260px) scale(0.82); opacity: 0.55; filter: blur(1.5px); }
@@ -267,21 +309,5 @@ main {
         0%, 100% { transform: translateY(140px) translateX(0); }
         25% { transform: translateY(140px) translateX(-10px); }
         75% { transform: translateY(140px) translateX(10px); }
-    }
-
-    /* credits become a small single line ABOVE the header content */
-    header {
-        position: relative;
-        padding-top: 14px; /* room for the top line */
-    }
-    .credits-top {
-        position: absolute;
-        top: 3px;
-        left: 15px;
-        right: 15px;
-        justify-content: center;     /* centered line */
-        font-size: 10px;
-        opacity: 0.9;
-        pointer-events: auto;
     }
 }
