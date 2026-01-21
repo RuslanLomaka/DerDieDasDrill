@@ -28,10 +28,9 @@
         <button class="chip" type="button" data-level="A2">A2</button>
         <button class="chip" type="button" data-level="B1">B1</button>
         <button class="chip" type="button" data-level="B2">B2</button>
+        <button class="chip" type="button" data-level="C1">C1</button>
         <button class="chip" type="button" data-level="ALL">ALL</button>
       </div>
-
-      <button class="pill" id="resetBtn" onclick="location.reload()">Reset</button>
     </div>
   </div>
 </header>
@@ -78,15 +77,13 @@ let isLock = false;
 let activeUnit = null;
 let prevUnit = null;
 
-const resetBtn = document.getElementById('resetBtn');
-
 /* =========================
    UI TRANSLATIONS
    ========================= */
 const ui = {
-  de: { streak: "Streak", score: "Score", words: "Words", reset: "Reset" },
-  en: { streak: "Streak", score: "Score", words: "Words", reset: "Reset" },
-  uk: { streak: "Серія", score: "Рахунок", words: "Слів", reset: "Скинути" }
+  de: { streak: "Streak", score: "Score", words: "Words" },
+  en: { streak: "Streak", score: "Score", words: "Words" },
+  uk: { streak: "Серія", score: "Рахунок", words: "Слів" }
 };
 
 /* =========================
@@ -97,9 +94,7 @@ const LANGS = ["de", "en", "uk"];
 const LANG_FLAG = { de: "🇩🇪", en: "🇬🇧", uk: "🇺🇦" };
 let currentLangIndex = 0;
 
-function currentLang() {
-  return LANGS[currentLangIndex];
-}
+function currentLang() { return LANGS[currentLangIndex]; }
 
 function setLangIndex(idx) {
   currentLangIndex = (idx + LANGS.length) % LANGS.length;
@@ -122,7 +117,6 @@ function applyUiLang(lang) {
   document.getElementById('labelStreak').textContent = t.streak;
   document.getElementById('labelScore').textContent  = t.score;
   document.getElementById('labelWords').textContent  = t.words;
-  resetBtn.textContent = t.reset;
 }
 
 /* =========================
@@ -130,7 +124,9 @@ function applyUiLang(lang) {
    ========================= */
 const levelChips = document.getElementById('levelChips');
 const chipButtons = [...levelChips.querySelectorAll('.chip')];
-const LEVELS = ["A1", "A2", "B1", "B2"];
+
+// UPDATED: added C1
+const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 let selectedLevels = new Set(["A1"]);
 
 function setChipActive(level, isActive) {
@@ -232,26 +228,22 @@ function updateSlotPositions() {
   if (!stage) return;
 
   const stageH = stage.clientHeight;
-  const slotH = 140; // keep synced with CSS
+  const slotH = 140;
 
-  // desired proportions (feel free to tweak later)
   let yNext   = Math.round(stageH * 0.06);
   let yActive = Math.round(stageH * 0.30);
   let yPrev   = Math.round(stageH * 0.62);
   let yExit   = stageH + 40;
 
-  // hard clamps to guarantee visibility
-  const maxPrev = stageH - slotH - 10;          // keep fully inside
-  const minPrev = Math.max(yActive + 70, 0);    // don't overlap active
+  const maxPrev = stageH - slotH - 10;
+  const minPrev = Math.max(yActive + 70, 0);
 
   yPrev = Math.min(yPrev, maxPrev);
   yPrev = Math.max(yPrev, minPrev);
 
-  // keep active in reasonable range
   yActive = Math.min(yActive, Math.max(120, stageH - slotH - 60));
   yActive = Math.max(yActive, 90);
 
-  // if stage is very short, pull next closer
   yNext = Math.min(yNext, Math.max(18, yActive - 110));
 
   document.documentElement.style.setProperty('--y-next',   `${yNext}px`);
