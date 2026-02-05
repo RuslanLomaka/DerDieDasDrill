@@ -525,11 +525,30 @@ main{
         margin:0;
     }
 
+    main{
+        padding:6px;
+        gap:6px;
+    }
+
+    .game-hud{
+        height: 44px;
+        padding: 0 8px;
+        border-radius: 10px;
+    }
+    .stat-item{ min-width:72px; }
+    .stat-item .value{ font-size:16px; }
+
+    .search-input{
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
     /* shorter stage (you asked), but still readable */
     .stage{
         width: 100%;
-        height: min(70dvh, 520px);
-        border-radius:20px;
+        height: clamp(220px, 42dvh, 320px);
+        border-radius:18px;
+        border-width: 2px;
     }
 
     .stage::before, .stage::after{ height: 55px; }
@@ -554,8 +573,8 @@ main{
 
     .chip{ padding:5px 9px; font-size:12px; }
 
-    .controls-area{ height: 82px; }
-    .btn{ font-size:18px; }
+    .controls-area{ height: 70px; }
+    .btn{ font-size:17px; }
 
     .btn.der{
         box-shadow: 0 0 12px rgba(75,139,255,0.55),
