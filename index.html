@@ -71,6 +71,21 @@
       <div id="modalList" class="modal-list" role="list"></div>
     </div>
   </div>
+  <div id="infoModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card modal-info" role="document">
+      <div class="modal-header">
+        <h3 class="modal-title">Word</h3>
+        <button id="infoClose" class="modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="infoWord" class="info-word"></div>
+        <div id="infoPlural" class="info-plural"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="infoOk" class="pill" type="button">OK</button>
+      </div>
+    </div>
+  </div>
 
   <div class="stage-wrapper">
     <div class="stage" id="stage">
@@ -210,6 +225,11 @@ const wordModal = document.getElementById('wordModal');
 const modalList = document.getElementById('modalList');
 const modalClose = document.getElementById('modalClose');
 const levelCountBtn = document.getElementById('levelCount');
+const infoModal = document.getElementById('infoModal');
+const infoClose = document.getElementById('infoClose');
+const infoOk = document.getElementById('infoOk');
+const infoWord = document.getElementById('infoWord');
+const infoPlural = document.getElementById('infoPlural');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
@@ -299,6 +319,25 @@ function openWordModal() {
 function closeWordModal() {
   wordModal.classList.remove('is-visible');
   wordModal.setAttribute('aria-hidden', 'true');
+}
+
+function openInfoModal(item) {
+  if (!infoModal || !infoWord || !infoPlural) return;
+  infoWord.textContent = `${item.a} ${item.w}`;
+  if (item.p) {
+    infoPlural.textContent = `Plural: ${item.p}`;
+    infoPlural.style.display = 'block';
+  } else {
+    infoPlural.textContent = '';
+    infoPlural.style.display = 'none';
+  }
+  infoModal.classList.add('is-visible');
+  infoModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeInfoModal() {
+  infoModal.classList.remove('is-visible');
+  infoModal.setAttribute('aria-hidden', 'true');
 }
 
 function setRepeatMode(enabled, options = {}) {
@@ -720,6 +759,7 @@ searchResults.addEventListener('click', (e) => {
   searchInput.value = item.w;
   clearSearchResults();
   jumpToWord(item);
+  openInfoModal(item);
 });
 
 document.addEventListener('click', (e) => {
@@ -741,6 +781,11 @@ levelCountBtn.addEventListener('click', openWordModal);
 modalClose.addEventListener('click', closeWordModal);
 wordModal.addEventListener('click', (e) => {
   if (e.target === wordModal) closeWordModal();
+});
+infoClose.addEventListener('click', closeInfoModal);
+infoOk.addEventListener('click', closeInfoModal);
+infoModal.addEventListener('click', (e) => {
+  if (e.target === infoModal) closeInfoModal();
 });
 
 setLangIndex(0);
