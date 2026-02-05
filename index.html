@@ -73,10 +73,6 @@
   </div>
   <div id="infoModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card modal-info" role="document">
-      <div class="modal-header">
-        <h3 class="modal-title">Word</h3>
-        <button id="infoClose" class="modal-close" type="button" aria-label="Close">✕</button>
-      </div>
       <div class="modal-body">
         <div id="infoWord" class="info-word"></div>
         <div id="infoPlural" class="info-plural"></div>
@@ -159,9 +155,9 @@ const progress = loadProgress();
    UI TRANSLATIONS
    ========================= */
 const ui = {
-  de: { streak: "Streak", score: "Score", words: "Words", redo: "Noch" },
-  en: { streak: "Streak", score: "Score", words: "Words", redo: "Redo" },
-  uk: { streak: "Серія", score: "Рахунок", words: "Слів", redo: "знов" }
+  de: { streak: "Streak", score: "Score", words: "Words", redo: "Noch", plural: "Plural", pluralNone: "Kein Plural moeglich" },
+  en: { streak: "Streak", score: "Score", words: "Words", redo: "Redo", plural: "Plural", pluralNone: "No plural form" },
+  uk: { streak: "Серія", score: "Рахунок", words: "Слів", redo: "знов", plural: "Множина", pluralNone: "Немає форми множини" }
 };
 
 /* =========================
@@ -226,7 +222,6 @@ const modalList = document.getElementById('modalList');
 const modalClose = document.getElementById('modalClose');
 const levelCountBtn = document.getElementById('levelCount');
 const infoModal = document.getElementById('infoModal');
-const infoClose = document.getElementById('infoClose');
 const infoOk = document.getElementById('infoOk');
 const infoWord = document.getElementById('infoWord');
 const infoPlural = document.getElementById('infoPlural');
@@ -323,13 +318,14 @@ function closeWordModal() {
 
 function openInfoModal(item) {
   if (!infoModal || !infoWord || !infoPlural) return;
+  const t = ui[currentLang()] || ui.de;
   infoWord.textContent = `${item.a} ${item.w}`;
-  if (item.p) {
-    infoPlural.textContent = `Plural: ${item.p}`;
+  if (item.p && String(item.p).trim()) {
+    infoPlural.textContent = `${t.plural}: ${item.p}`;
     infoPlural.style.display = 'block';
   } else {
-    infoPlural.textContent = '';
-    infoPlural.style.display = 'none';
+    infoPlural.textContent = t.pluralNone;
+    infoPlural.style.display = 'block';
   }
   infoModal.classList.add('is-visible');
   infoModal.setAttribute('aria-hidden', 'false');
@@ -684,13 +680,22 @@ function renderSearchResults(items) {
     searchResults.classList.remove('is-visible');
     return;
   }
+  const lang = currentLang();
 
   items.forEach(item => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'search-item';
     btn.dataset.key = getWordKey(item);
-    btn.innerHTML = `<strong>${item.a}</strong> ${item.w} <span class="hint">${item.l}</span>`;
+    const translation = lang === 'de' ? '' : (item.t?.[lang] || '');
+    const plural = item.p && String(item.p).trim() ? item.p : '';
+    const metaParts = [];
+    metaParts.push(item.l);
+    if (plural) metaParts.push(`Pl: ${plural}`);
+    if (translation) metaParts.push(translation);
+    btn.innerHTML =
+      `<strong>${item.a}</strong> ${item.w}` +
+      `<span class="hint">${metaParts.join(' • ')}</span>`;
     searchResults.appendChild(btn);
   });
 
@@ -782,7 +787,6 @@ modalClose.addEventListener('click', closeWordModal);
 wordModal.addEventListener('click', (e) => {
   if (e.target === wordModal) closeWordModal();
 });
-infoClose.addEventListener('click', closeInfoModal);
 infoOk.addEventListener('click', closeInfoModal);
 infoModal.addEventListener('click', (e) => {
   if (e.target === infoModal) closeInfoModal();
