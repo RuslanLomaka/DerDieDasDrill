@@ -53,7 +53,7 @@
     </div>
     <div class="stat-item">
       <span class="label" id="labelWords">Words</span>
-      <span class="value" id="levelCount" style="color: var(--muted)">0</span>
+      <button class="value words-trigger" id="levelCount" type="button" aria-label="Word list" style="color: var(--muted)">0</button>
     </div>
   </div>
 
@@ -62,6 +62,15 @@
     <div id="searchResults" class="search-results" role="listbox" aria-label="Search results"></div>
   </div>
   <div id="notice" class="notice" aria-live="polite"></div>
+  <div id="wordModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card" role="document">
+      <div class="modal-header">
+        <h3 class="modal-title">Words</h3>
+        <button id="modalClose" class="modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div id="modalList" class="modal-list" role="list"></div>
+    </div>
+  </div>
 
   <div class="stage-wrapper">
     <div class="stage" id="stage">
@@ -172,6 +181,10 @@ function applyUiLang(lang) {
   document.getElementById('labelScore').textContent  = t.score;
   document.getElementById('labelWords').textContent  = t.words;
   if (repeatLabel) repeatLabel.textContent = t.redo;
+  if (wordModal) {
+    const title = wordModal.querySelector('.modal-title');
+    if (title) title.textContent = t.words;
+  }
 }
 
 const noticeEl = document.getElementById('notice');
@@ -193,6 +206,10 @@ const chipButtons = [...levelChips.querySelectorAll('.chip')];
 const repeatToggle = document.getElementById('repeatToggle');
 const repeatLabel = document.getElementById('repeatLabel');
 const listCountEl = document.getElementById('listCount');
+const wordModal = document.getElementById('wordModal');
+const modalList = document.getElementById('modalList');
+const modalClose = document.getElementById('modalClose');
+const levelCountBtn = document.getElementById('levelCount');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
@@ -245,6 +262,43 @@ function updateWordCount(count) {
     const mistakeCount = rawData.filter(item => hasMistake(item) && !isMastered(item)).length;
     listCountEl.textContent = mistakeCount;
   }
+}
+
+function renderWordList() {
+  if (!modalList) return;
+  const lang = currentLang();
+  const items = [...basePool].sort((a, b) => a.w.localeCompare(b.w, 'de'));
+  modalList.innerHTML = '';
+  if (items.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'modal-empty';
+    empty.textContent = 'No words.';
+    modalList.appendChild(empty);
+    return;
+  }
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'modal-row';
+    const translation = lang === 'de' ? '' : (item.t?.[lang] || '');
+    row.innerHTML =
+      `<div class="modal-word"><span class="modal-article">${item.a}</span>${item.w}</div>` +
+      `<div class="modal-meta">` +
+        `<span class="modal-level">${item.l}</span>` +
+        `<span class="modal-translation">${translation}</span>` +
+      `</div>`;
+    modalList.appendChild(row);
+  });
+}
+
+function openWordModal() {
+  renderWordList();
+  wordModal.classList.add('is-visible');
+  wordModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeWordModal() {
+  wordModal.classList.remove('is-visible');
+  wordModal.setAttribute('aria-hidden', 'true');
 }
 
 function setRepeatMode(enabled, options = {}) {
@@ -676,11 +730,18 @@ document.addEventListener('click', (e) => {
 window.onkeydown = (e) => {
   const tag = document.activeElement?.tagName || "";
   if (tag === "INPUT" || tag === "TEXTAREA") return;
+  if (e.key === 'Escape') closeWordModal();
   const key = e.key.toLowerCase();
   if (key === 'a') handleChoice('der');
   if (key === 's') handleChoice('die');
   if (key === 'd') handleChoice('das');
 };
+
+levelCountBtn.addEventListener('click', openWordModal);
+modalClose.addEventListener('click', closeWordModal);
+wordModal.addEventListener('click', (e) => {
+  if (e.target === wordModal) closeWordModal();
+});
 
 setLangIndex(0);
 syncChipsToSelection();
