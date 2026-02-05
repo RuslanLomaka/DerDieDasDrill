@@ -242,7 +242,7 @@ function buildBasePool() {
 function updateWordCount(count) {
   document.getElementById('levelCount').innerText = count;
   if (listCountEl) {
-    const mistakeCount = rawData.filter(hasMistake).length;
+    const mistakeCount = rawData.filter(item => hasMistake(item) && !isMastered(item)).length;
     listCountEl.textContent = mistakeCount;
   }
 }

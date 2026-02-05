@@ -441,7 +441,7 @@ main{
 
     /* shorter stage (you asked), but still readable */
     .stage{
-        width: 96vw;
+        width: 100%;
         height: min(70dvh, 520px);
         border-radius:20px;
     }
