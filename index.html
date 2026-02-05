@@ -691,12 +691,14 @@ const WORD_INDEX = new Map(rawData.map(item => [getWordKey(item), item]));
 function clearSearchResults() {
   searchResults.innerHTML = '';
   searchResults.classList.remove('is-visible');
+  document.body.classList.remove('search-open');
 }
 
 function renderSearchResults(items) {
   searchResults.innerHTML = '';
   if (items.length === 0) {
     searchResults.classList.remove('is-visible');
+    document.body.classList.remove('search-open');
     return;
   }
   const lang = currentLang();
@@ -719,6 +721,7 @@ function renderSearchResults(items) {
   });
 
   searchResults.classList.add('is-visible');
+  document.body.classList.add('search-open');
 }
 
 function updateSearchResults() {
