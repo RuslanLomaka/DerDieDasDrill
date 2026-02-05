@@ -141,7 +141,7 @@ main{
     width:100%;
     max-width:600px;
     margin:0 auto;
-    padding:10px;
+    padding:6px;
     position:relative;
 
     display:flex;
@@ -236,7 +236,7 @@ main{
 
 .stage{
     position:relative;
-    width: min(320px, 92vw);
+    width: min(520px, 96vw);
     height: 480px;
     background: #080c18;
     border-radius: 24px;
@@ -441,8 +441,9 @@ main{
 
     /* shorter stage (you asked), but still readable */
     .stage{
-        height: clamp(260px, 38dvh, 360px);
-        border-radius:22px;
+        width: 96vw;
+        height: min(70dvh, 520px);
+        border-radius:20px;
     }
 
     .stage::before, .stage::after{ height: 55px; }

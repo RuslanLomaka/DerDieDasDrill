@@ -444,21 +444,10 @@ function updateSlotPositions() {
   const stageH = stage.clientHeight;
   const slotH = 140;
 
-  let yNext   = Math.round(stageH * 0.06);
-  let yActive = Math.round(stageH * 0.30);
-  let yPrev   = Math.round(stageH * 0.62);
-  let yExit   = stageH + 40;
-
-  const maxPrev = stageH - slotH - 10;
-  const minPrev = Math.max(yActive + 70, 0);
-
-  yPrev = Math.min(yPrev, maxPrev);
-  yPrev = Math.max(yPrev, minPrev);
-
-  yActive = Math.min(yActive, Math.max(120, stageH - slotH - 60));
-  yActive = Math.max(yActive, 90);
-
-  yNext = Math.min(yNext, Math.max(18, yActive - 110));
+  const yActive = Math.round((stageH - slotH) / 2);
+  const yNext = Math.max(12, yActive - 120);
+  const yPrev = Math.min(stageH - slotH - 8, yActive + 120);
+  const yExit = stageH + 40;
 
   document.documentElement.style.setProperty('--y-next',   `${yNext}px`);
   document.documentElement.style.setProperty('--y-active', `${yActive}px`);
