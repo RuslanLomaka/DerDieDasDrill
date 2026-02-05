@@ -184,6 +184,7 @@ main{
 .search-panel{
     position: relative;
     width: 100%;
+    z-index: 40;
 }
 .search-input{
     width: 100%;
@@ -206,7 +207,7 @@ main{
     border-radius: 10px;
     max-height: 260px;
     overflow-y: auto;
-    z-index: 20;
+    z-index: 50;
     display: none;
 }
 .search-results.is-visible{ display: block; }
@@ -351,6 +352,7 @@ main{
     border: 3px solid var(--border);
     box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
     overflow:hidden;
+    z-index:0;
 }
 
 .stage::before, .stage::after{
@@ -374,16 +376,33 @@ main{
     border: 1px solid rgba(36,51,92,0.9);
     background: rgba(18,25,45,0.35);
     color: var(--text);
-    font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",system-ui,-apple-system,sans-serif;
+    font-family: "Segoe UI Emoji","Segoe UI Symbol","Apple Color Emoji","Noto Color Emoji",system-ui,-apple-system,sans-serif;
     display:inline-flex;
     align-items:center;
     justify-content:center;
+    font-size:0;
     cursor:pointer;
     user-select:none;
     -webkit-tap-highlight-color: transparent;
     transition: opacity 220ms ease, transform 120ms ease, background 220ms ease, border-color 220ms ease;
-    font-size:18px;
     line-height:1;
+}
+.lang-toggle::before{
+    content:"";
+    width:20px;
+    height:14px;
+    border-radius:2px;
+    background-size: cover;
+    background-position: center;
+}
+.lang-toggle.lang-de::before{
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 24'><rect width='36' height='8' fill='%23000'/><rect y='8' width='36' height='8' fill='%23dd0000'/><rect y='16' width='36' height='8' fill='%23ffce00'/></svg>");
+}
+.lang-toggle.lang-en::before{
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 24'><rect width='36' height='24' fill='%2300247d'/><path d='M0 0 L36 24 M36 0 L0 24' stroke='%23fff' stroke-width='6'/><path d='M0 0 L36 24 M36 0 L0 24' stroke='%23cf142b' stroke-width='3'/><rect x='14' width='8' height='24' fill='%23fff'/><rect y='8' width='36' height='8' fill='%23fff'/><rect x='16' width='4' height='24' fill='%23cf142b'/><rect y='10' width='36' height='4' fill='%23cf142b'/></svg>");
+}
+.lang-toggle.lang-uk::before{
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 24'><rect width='36' height='12' fill='%230055bb'/><rect y='12' width='36' height='12' fill='%23ffd500'/></svg>");
 }
 .lang-toggle:active{ transform: scale(0.96); }
 .lang-toggle.is-dim{ opacity: 0.18; }
@@ -579,7 +598,7 @@ main{
     .lang-toggle{
         width:32px; height:32px;
         border-radius:10px;
-        font-size:17px;
+        font-size:0;
     }
 
     .controls-top{
