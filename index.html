@@ -23,6 +23,10 @@
     </h2>
 
     <div class="controls-top">
+      <button id="repeatToggle" class="pill" type="button" aria-pressed="false">
+        <span id="repeatLabel">Noch</span>
+        <span id="listCount" class="pill-count" aria-label="Word count">0</span>
+      </button>
       <div class="level-chips" id="levelChips" aria-label="Levels">
         <button class="chip active" type="button" data-level="A1">A1</button>
         <button class="chip" type="button" data-level="A2">A2</button>
@@ -31,7 +35,6 @@
         <button class="chip" type="button" data-level="C1">C1</button>
         <button class="chip" type="button" data-level="ALL">ALL</button>
       </div>
-      <button id="repeatToggle" class="pill" type="button" aria-pressed="false">Repeat</button>
     </div>
   </div>
 </header>
@@ -132,9 +135,9 @@ const progress = loadProgress();
    UI TRANSLATIONS
    ========================= */
 const ui = {
-  de: { streak: "Streak", score: "Score", words: "Words" },
-  en: { streak: "Streak", score: "Score", words: "Words" },
-  uk: { streak: "Серія", score: "Рахунок", words: "Слів" }
+  de: { streak: "Streak", score: "Score", words: "Words", redo: "Noch" },
+  en: { streak: "Streak", score: "Score", words: "Words", redo: "Redo" },
+  uk: { streak: "Серія", score: "Рахунок", words: "Слів", redo: "знов" }
 };
 
 /* =========================
@@ -168,6 +171,7 @@ function applyUiLang(lang) {
   document.getElementById('labelStreak').textContent = t.streak;
   document.getElementById('labelScore').textContent  = t.score;
   document.getElementById('labelWords').textContent  = t.words;
+  if (repeatLabel) repeatLabel.textContent = t.redo;
 }
 
 const noticeEl = document.getElementById('notice');
@@ -187,6 +191,8 @@ function showNotice(message) {
 const levelChips = document.getElementById('levelChips');
 const chipButtons = [...levelChips.querySelectorAll('.chip')];
 const repeatToggle = document.getElementById('repeatToggle');
+const repeatLabel = document.getElementById('repeatLabel');
+const listCountEl = document.getElementById('listCount');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
@@ -233,6 +239,14 @@ function buildBasePool() {
   return rawData.filter(item => selectedLevels.has(item.l) && !isMastered(item));
 }
 
+function updateWordCount(count) {
+  document.getElementById('levelCount').innerText = count;
+  if (listCountEl) {
+    const mistakeCount = rawData.filter(hasMistake).length;
+    listCountEl.textContent = mistakeCount;
+  }
+}
+
 function setRepeatMode(enabled, options = {}) {
   const { preserveSavedLevels = false, skipSave = false } = options;
   repeatMode = enabled;
@@ -274,7 +288,7 @@ function rebuildWordPool() {
 
   basePool = buildBasePool();
   activeWords = basePool.slice();
-  document.getElementById('levelCount').innerText = basePool.length;
+  updateWordCount(basePool.length);
 
   shuffle(activeWords);
   currentIndex = 0;
@@ -553,7 +567,7 @@ function handleChoice(choice) {
     spawnWord("pos-next");
 
     basePool = buildBasePool();
-    document.getElementById('levelCount').innerText = basePool.length;
+    updateWordCount(basePool.length);
 
     refreshActiveTranslation();
     isLock = false;
@@ -618,7 +632,7 @@ function jumpToWord(item) {
 
   basePool = pool;
   activeWords = [item, ...rest];
-  document.getElementById('levelCount').innerText = basePool.length;
+  updateWordCount(basePool.length);
 
   currentIndex = 0;
   document.getElementById('reel').innerHTML = '';
