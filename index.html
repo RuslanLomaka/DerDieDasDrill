@@ -569,6 +569,13 @@ function handleChoice(choice) {
     basePool = buildBasePool();
     updateWordCount(basePool.length);
 
+    if (basePool.length === 0) {
+      document.getElementById('reel').innerHTML = '';
+      prevUnit = null;
+      activeUnit = null;
+      showNotice("No words left.");
+    }
+
     refreshActiveTranslation();
     isLock = false;
   }, 900);
