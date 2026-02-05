@@ -31,6 +31,7 @@
         <button class="chip" type="button" data-level="C1">C1</button>
         <button class="chip" type="button" data-level="ALL">ALL</button>
       </div>
+      <button id="repeatToggle" class="pill" type="button" aria-pressed="false">Repeat</button>
     </div>
   </div>
 </header>
@@ -53,6 +54,12 @@
     </div>
   </div>
 
+  <div class="search-panel">
+    <input id="searchInput" class="search-input" type="text" inputmode="search" autocomplete="off" placeholder="Search word">
+    <div id="searchResults" class="search-results" role="listbox" aria-label="Search results"></div>
+  </div>
+  <div id="notice" class="notice" aria-live="polite"></div>
+
   <div class="stage-wrapper">
     <div class="stage" id="stage">
       <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
@@ -71,11 +78,55 @@
 <script>
 // --- GAME LOGIC ---
 let activeWords = [];
+let basePool = [];
 let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
 let isLock = false;
 let activeUnit = null;
 let prevUnit = null;
+let noticeTimer = null;
+
+const STORAGE_KEY = "ddd_progress_v1";
+const PROGRESS_DEFAULT = {
+  levelPrefs: ["A1"],
+  savedLevels: ["A1"],
+  repeatMode: false,
+  stats: {},
+  totals: { ok: 0, bad: 0 },
+  maxStreak: 0,
+  achievements: {}
+};
+
+function safeParseJSON(text, fallback) {
+  try { return JSON.parse(text); } catch (_) { return fallback; }
+}
+
+function loadProgress() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { ...PROGRESS_DEFAULT };
+  const data = safeParseJSON(raw, {});
+  return {
+    ...PROGRESS_DEFAULT,
+    ...data,
+    stats: data.stats || {},
+    totals: data.totals || { ok: 0, bad: 0 },
+    achievements: data.achievements || {}
+  };
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  } catch (_) {
+    // No-op: storage may be unavailable.
+  }
+}
+
+function getWordKey(item) {
+  return `${item.w}|${item.a}`;
+}
+
+const progress = loadProgress();
 
 /* =========================
    UI TRANSLATIONS
@@ -119,15 +170,35 @@ function applyUiLang(lang) {
   document.getElementById('labelWords').textContent  = t.words;
 }
 
+const noticeEl = document.getElementById('notice');
+function showNotice(message) {
+  if (!noticeEl) return;
+  if (noticeTimer) clearTimeout(noticeTimer);
+  noticeEl.textContent = message;
+  noticeEl.classList.add('is-visible');
+  noticeTimer = setTimeout(() => {
+    noticeEl.classList.remove('is-visible');
+  }, 2400);
+}
+
 /* =========================
    LEVEL CHIPS (multi-select)
    ========================= */
 const levelChips = document.getElementById('levelChips');
 const chipButtons = [...levelChips.querySelectorAll('.chip')];
+const repeatToggle = document.getElementById('repeatToggle');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
-let selectedLevels = new Set(["A1"]);
+let selectedLevels = new Set(
+  Array.isArray(progress.levelPrefs) && progress.levelPrefs.length
+    ? progress.levelPrefs
+    : ["A1"]
+);
+let repeatMode = progress.repeatMode === true;
+let savedLevels = Array.isArray(progress.savedLevels) && progress.savedLevels.length
+  ? progress.savedLevels
+  : [...selectedLevels];
 
 function setChipActive(level, isActive) {
   const btn = chipButtons.find(b => b.dataset.level === level);
@@ -135,35 +206,101 @@ function setChipActive(level, isActive) {
   btn.classList.toggle('active', isActive);
 }
 
+function syncChipsToSelection() {
+  LEVELS.forEach(l => setChipActive(l, selectedLevels.has(l)));
+  updateAllChipState();
+}
+
 function updateAllChipState() {
   const allOn = LEVELS.every(l => selectedLevels.has(l));
   setChipActive("ALL", allOn);
 }
 
-function rebuildWordPool() {
-  if (selectedLevels.size === 0) {
-    selectedLevels.add("A1");
-    setChipActive("A1", true);
+function isMastered(item) {
+  const key = getWordKey(item);
+  return Boolean(progress.stats[key]?.mastered);
+}
+
+function hasMistake(item) {
+  const key = getWordKey(item);
+  return Boolean(progress.stats[key]?.wrongTotal);
+}
+
+function buildBasePool() {
+  if (repeatMode) {
+    return rawData.filter(item => hasMistake(item) && !isMastered(item));
+  }
+  return rawData.filter(item => selectedLevels.has(item.l) && !isMastered(item));
+}
+
+function setRepeatMode(enabled, options = {}) {
+  const { preserveSavedLevels = false, skipSave = false } = options;
+  repeatMode = enabled;
+  progress.repeatMode = enabled;
+  repeatToggle.classList.toggle('active', enabled);
+  repeatToggle.setAttribute('aria-pressed', enabled ? "true" : "false");
+  levelChips.classList.toggle('is-disabled', enabled);
+
+  if (enabled) {
+    if (!preserveSavedLevels) {
+      savedLevels = [...selectedLevels];
+      progress.savedLevels = savedLevels;
+    }
+    selectedLevels = new Set();
+    LEVELS.forEach(l => setChipActive(l, false));
+    updateAllChipState();
+    rebuildWordPool();
+    if (activeWords.length === 0) {
+      showNotice("No repeat words yet.");
+    }
+  } else {
+    const restore = Array.isArray(savedLevels) && savedLevels.length ? savedLevels : ["A1"];
+    selectedLevels = new Set(restore);
+    progress.levelPrefs = [...selectedLevels];
+    syncChipsToSelection();
+    rebuildWordPool();
   }
 
-  activeWords = rawData.filter(item => selectedLevels.has(item.l));
-  document.getElementById('levelCount').innerText = activeWords.length;
+  if (!skipSave) saveProgress();
+}
+
+function rebuildWordPool() {
+  if (!repeatMode && selectedLevels.size === 0) {
+    selectedLevels.add("A1");
+    setChipActive("A1", true);
+    progress.levelPrefs = [...selectedLevels];
+    saveProgress();
+  }
+
+  basePool = buildBasePool();
+  activeWords = basePool.slice();
+  document.getElementById('levelCount').innerText = basePool.length;
 
   shuffle(activeWords);
   currentIndex = 0;
 
   document.getElementById('reel').innerHTML = '';
   prevUnit = null;
+  activeUnit = null;
 
-  spawnWord("pos-active");
-  currentIndex++;
-  spawnWord("pos-next");
+  if (activeWords.length === 0) {
+    refreshActiveTranslation();
+    langBtn.classList.remove('is-dim');
+    return;
+  }
+
+  const first = spawnWord("pos-active");
+  if (first) {
+    currentIndex++;
+    spawnWord("pos-next");
+  }
 
   langBtn.classList.remove('is-dim');
   refreshActiveTranslation();
 }
 
 function onChipClick(level) {
+  if (repeatMode) return;
   if (level === "ALL") {
     const allOn = LEVELS.every(l => selectedLevels.has(l));
     if (!allOn) {
@@ -176,6 +313,8 @@ function onChipClick(level) {
       LEVELS.forEach(l => setChipActive(l, l === "A1"));
     }
     updateAllChipState();
+    progress.levelPrefs = [...selectedLevels];
+    saveProgress();
     rebuildWordPool();
     return;
   }
@@ -189,6 +328,8 @@ function onChipClick(level) {
   }
 
   updateAllChipState();
+  progress.levelPrefs = [...selectedLevels];
+  saveProgress();
   rebuildWordPool();
 }
 
@@ -198,9 +339,67 @@ levelChips.addEventListener('click', (e) => {
   onChipClick(btn.dataset.level);
 });
 
+repeatToggle.addEventListener('click', () => setRepeatMode(!repeatMode));
+
 /* =========================
    TRANSLATION SUBTITLE
    ========================= */
+function ensureWordStats(item) {
+  const key = getWordKey(item);
+  if (!progress.stats[key]) {
+    progress.stats[key] = {
+      wrongStreak: 0,
+      rightStreak: 0,
+      wrongTotal: 0,
+      rightTotal: 0,
+      mastered: false,
+      lastWarnedStreak: 0
+    };
+  }
+  return progress.stats[key];
+}
+
+function updateAchievements() {
+  const unlocked = progress.achievements;
+  if (progress.maxStreak >= 10) unlocked.streak10 = true;
+  if (progress.totals.ok >= 100) unlocked.correct100 = true;
+  const masteredCount = Object.values(progress.stats).filter(s => s.mastered).length;
+  if (masteredCount >= 10) unlocked.mastered10 = true;
+}
+
+function updateProgressOnAnswer(item, isRight) {
+  const wordStats = ensureWordStats(item);
+  if (isRight) {
+    wordStats.rightTotal++;
+    wordStats.rightStreak++;
+    wordStats.wrongStreak = 0;
+    wordStats.lastWarnedStreak = 0;
+  } else {
+    wordStats.wrongTotal++;
+    wordStats.wrongStreak++;
+    wordStats.rightStreak = 0;
+  }
+
+  if (!isRight && wordStats.wrongStreak === 5 && wordStats.lastWarnedStreak !== 5) {
+    showNotice(`Be more patient: ${item.a} ${item.w}`);
+    wordStats.lastWarnedStreak = 5;
+  }
+
+  if (isRight && wordStats.rightStreak === 5) {
+    wordStats.mastered = true;
+  }
+
+  if (isRight) progress.totals.ok++;
+  else progress.totals.bad++;
+
+  if (stats.streak > progress.maxStreak) {
+    progress.maxStreak = stats.streak;
+  }
+
+  updateAchievements();
+  saveProgress();
+}
+
 function getTranslationFor(item, lang) {
   if (!item) return "";
   if (lang === "de") return "";
@@ -210,6 +409,7 @@ function getTranslationFor(item, lang) {
 function refreshActiveTranslation() {
   const lang = currentLang();
   if (!activeUnit) return;
+  if (activeWords.length === 0) return;
 
   const data = activeWords[(currentIndex - 1) % activeWords.length];
   const sub = activeUnit.querySelector('.sub-translation');
@@ -265,8 +465,21 @@ function shuffle(a) {
   }
 }
 
-function spawnWord(startPos) {
+function findNextPlayableIndex(startIndex) {
+  if (activeWords.length === 0) return -1;
+  for (let i = 0; i < activeWords.length; i++) {
+    const idx = (startIndex + i) % activeWords.length;
+    if (!isMastered(activeWords[idx])) return idx;
+  }
+  return -1;
+}
+
+function spawnWord(startPos, options = {}) {
+  const { forceIndex = null } = options;
   const reel = document.getElementById('reel');
+  const spawnIndex = forceIndex === null ? findNextPlayableIndex(currentIndex) : forceIndex;
+  if (spawnIndex === -1) return null;
+  currentIndex = spawnIndex;
   const data = activeWords[currentIndex % activeWords.length];
 
   const unit = document.createElement('div');
@@ -294,7 +507,7 @@ function spawnWord(startPos) {
 }
 
 function handleChoice(choice) {
-  if (isLock || activeWords.length === 0) return;
+  if (isLock || activeWords.length === 0 || !activeUnit) return;
 
   langBtn.classList.add('is-dim');
 
@@ -308,6 +521,7 @@ function handleChoice(choice) {
     stats.bad++;
     stats.streak = 0;
     updateScore();
+    updateProgressOnAnswer(currentData, false);
     return;
   }
 
@@ -315,6 +529,7 @@ function handleChoice(choice) {
   stats.ok++;
   stats.streak++;
   updateScore();
+  updateProgressOnAnswer(currentData, true);
 
   activeUnit.classList.add('resolved');
   activeUnit.style.color = `var(--${correctArt})`;
@@ -332,10 +547,13 @@ function handleChoice(choice) {
     prevUnit.className = 'slot-unit pos-prev resolved';
 
     activeUnit = nextInLine;
-    activeUnit.className = 'slot-unit pos-active';
+    if (activeUnit) activeUnit.className = 'slot-unit pos-active';
 
     currentIndex++;
     spawnWord("pos-next");
+
+    basePool = buildBasePool();
+    document.getElementById('levelCount').innerText = basePool.length;
 
     refreshActiveTranslation();
     isLock = false;
@@ -348,7 +566,106 @@ function updateScore() {
   document.getElementById('streak').innerText = stats.streak;
 }
 
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+const WORD_INDEX = new Map(rawData.map(item => [getWordKey(item), item]));
+
+function clearSearchResults() {
+  searchResults.innerHTML = '';
+  searchResults.classList.remove('is-visible');
+}
+
+function renderSearchResults(items) {
+  searchResults.innerHTML = '';
+  if (items.length === 0) {
+    searchResults.classList.remove('is-visible');
+    return;
+  }
+
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'search-item';
+    btn.dataset.key = getWordKey(item);
+    btn.innerHTML = `<strong>${item.a}</strong> ${item.w} <span class="hint">${item.l}</span>`;
+    searchResults.appendChild(btn);
+  });
+
+  searchResults.classList.add('is-visible');
+}
+
+function updateSearchResults() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) {
+    clearSearchResults();
+    return;
+  }
+  const matches = [];
+  for (const item of rawData) {
+    if (item.w.toLowerCase().startsWith(q)) {
+      matches.push(item);
+      if (matches.length >= 8) break;
+    }
+  }
+  renderSearchResults(matches);
+}
+
+function jumpToWord(item) {
+  const pool = buildBasePool();
+  const key = getWordKey(item);
+  const rest = pool.filter(w => getWordKey(w) !== key);
+  shuffle(rest);
+
+  basePool = pool;
+  activeWords = [item, ...rest];
+  document.getElementById('levelCount').innerText = basePool.length;
+
+  currentIndex = 0;
+  document.getElementById('reel').innerHTML = '';
+  prevUnit = null;
+  activeUnit = null;
+
+  const first = spawnWord("pos-active", { forceIndex: 0 });
+  if (first) {
+    currentIndex++;
+    spawnWord("pos-next");
+  }
+
+  langBtn.classList.remove('is-dim');
+  refreshActiveTranslation();
+}
+
+searchInput.addEventListener('input', updateSearchResults);
+searchInput.addEventListener('focus', updateSearchResults);
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const first = searchResults.querySelector('.search-item');
+    if (first) {
+      const item = WORD_INDEX.get(first.dataset.key);
+      if (item) jumpToWord(item);
+    }
+    clearSearchResults();
+  }
+});
+
+searchResults.addEventListener('click', (e) => {
+  const btn = e.target.closest('.search-item');
+  if (!btn) return;
+  const item = WORD_INDEX.get(btn.dataset.key);
+  if (!item) return;
+  searchInput.value = item.w;
+  clearSearchResults();
+  jumpToWord(item);
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target === searchInput || searchResults.contains(e.target)) return;
+  clearSearchResults();
+});
+
 window.onkeydown = (e) => {
+  const tag = document.activeElement?.tagName || "";
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
   const key = e.key.toLowerCase();
   if (key === 'a') handleChoice('der');
   if (key === 's') handleChoice('die');
@@ -356,7 +673,12 @@ window.onkeydown = (e) => {
 };
 
 setLangIndex(0);
-rebuildWordPool();
+syncChipsToSelection();
+if (repeatMode) {
+  setRepeatMode(true, { preserveSavedLevels: true, skipSave: true });
+} else {
+  rebuildWordPool();
+}
 updateSlotPositions();
 updateScore();
 </script>
