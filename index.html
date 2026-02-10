@@ -746,7 +746,12 @@ function handleChoice(choice) {
 
   langBtn.classList.add('is-dim');
 
-  const currentData = activeWords[(currentIndex - 1) % activeWords.length];
+  const dataIndex = (currentIndex - 1 + activeWords.length) % activeWords.length;
+  const currentData = activeWords[dataIndex];
+  if (!currentData) {
+    rebuildWordPool();
+    return;
+  }
   const correctArt = currentData.a;
   const isRight = choice === correctArt;
 
