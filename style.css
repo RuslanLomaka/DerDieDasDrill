@@ -451,6 +451,7 @@ main{
     font-weight:800;
     padding: 0 18px;
     text-align:center;
+    --word-scale: 1;
 }
 
 /* INNER LAYOUT: center correctly (word-only vs article+word) */
@@ -467,6 +468,7 @@ main{
     align-items:baseline;
     justify-content:center;
     width:100%;
+    flex-wrap: nowrap;
 }
 
 /* word + article typography (bigger, still clamps) */
@@ -479,34 +481,34 @@ main{
 /* bigger max for active */
 .slot-unit.pos-active .word-span,
 .slot-unit.pos-active .article-reveal{
-    font-size: clamp(22px, 6.4vw, 48px);
+    font-size: calc(clamp(22px, 6.4vw, 48px) * var(--word-scale));
 }
 
 /* previous readable */
 .slot-unit.pos-prev .word-span,
 .slot-unit.pos-prev .article-reveal{
-    font-size: clamp(16px, 3.8vw, 28px);
+    font-size: calc(clamp(16px, 3.8vw, 28px) * var(--word-scale));
 }
 
 /* next */
 .slot-unit.pos-next .word-span,
 .slot-unit.pos-next .article-reveal{
-    font-size: clamp(14px, 3.2vw, 22px);
+    font-size: calc(clamp(14px, 3.2vw, 22px) * var(--word-scale));
 }
 
 /* article should NOT affect centering until revealed */
 .article-reveal{
     opacity:0;
-    max-width:0;
-    overflow:hidden;
-    transition: opacity 220ms ease, max-width 260ms ease;
-    margin-right:0;
+    width: 0;
+    text-align: right;
+    transition: opacity 220ms ease;
+    margin-right: 0;
 }
 
 /* when resolved, article appears and adds spacing */
 .resolved .article-reveal{
     opacity:1;
-    max-width: 140px;
+    width: 3.6ch;
     margin-right: 10px;
 }
 
@@ -522,10 +524,56 @@ main{
     pointer-events:none;
 }
 
+/* redo attempt history */
+.attempt-bar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-bottom: 10px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 520ms ease, transform 520ms ease;
+}
+.attempt-seg{
+    width: 22px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(160,174,192,0.25);
+    border: 1px solid rgba(36,51,92,0.7);
+}
+.attempt-seg.is-correct{
+    background: var(--ok);
+    border-color: rgba(54,198,137,0.8);
+}
+.attempt-seg.is-wrong{
+    background: var(--bad);
+    border-color: rgba(255,100,112,0.8);
+}
+
+@keyframes attempt-in{
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.attempt-bar.is-enter{
+    animation: attempt-in 320ms ease;
+}
+
 /* show only on active, hide on prev/next/resolved */
 .slot-unit.pos-prev .sub-translation,
 .slot-unit.pos-next .sub-translation{ display:none !important; }
 .resolved .sub-translation{ display:none !important; }
+.slot-unit.pos-next .attempt-bar{
+    opacity: 0;
+    transform: translateY(-8px);
+}
+.slot-unit.pos-prev .attempt-bar,
+.slot-unit.pos-exit .attempt-bar,
+.resolved .attempt-bar{
+    opacity: 0;
+    transform: translateY(8px);
+    transition-delay: 140ms;
+}
 
 /* readability tweaks */
 .slot-unit.pos-active{ text-shadow: 0 10px 24px rgba(0,0,0,0.65); }
