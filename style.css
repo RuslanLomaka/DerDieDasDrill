@@ -431,6 +431,9 @@ main{
     transition: opacity 220ms ease, transform 120ms ease, background 220ms ease, border-color 220ms ease;
     line-height:1;
 }
+.level-chips .lang-toggle{
+    margin-right: 2px;
+}
 .lang-toggle::before{
     content:"";
     width:20px;
