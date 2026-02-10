@@ -104,6 +104,7 @@ let basePool = [];
 let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
 let isLock = false;
+let lockSince = 0;
 let activeUnit = null;
 let prevUnit = null;
 let noticeTimer = null;
@@ -161,9 +162,36 @@ function getCurrentActiveData() {
    UI TRANSLATIONS
    ========================= */
 const ui = {
-  de: { streak: "Serie", score: "Punkte", words: "Worter", redo: "Noch", plural: "Plural", pluralNone: "Kein Plural moeglich" },
-  en: { streak: "Streak", score: "Score", words: "Words", redo: "Redo", plural: "Plural", pluralNone: "No plural form" },
-  uk: { streak: "Серія", score: "Рахунок", words: "Слів", redo: "знов", plural: "Множина", pluralNone: "Немає форми множини" }
+  de: {
+    streak: "Serie",
+    score: "Punkte",
+    words: "Worter",
+    redo: "Noch",
+    plural: "Plural",
+    pluralNone: "Kein Plural moeglich",
+    mastered: "Gelernt",
+    masteredHint: "Aus dem Wiederholen entfernt. Merke dir den Artikel."
+  },
+  en: {
+    streak: "Streak",
+    score: "Score",
+    words: "Words",
+    redo: "Redo",
+    plural: "Plural",
+    pluralNone: "No plural form",
+    mastered: "Mastered",
+    masteredHint: "Removed from redo. Remember the article."
+  },
+  uk: {
+    streak: "Серія",
+    score: "Рахунок",
+    words: "Слів",
+    redo: "знов",
+    plural: "Множина",
+    pluralNone: "Немає форми множини",
+    mastered: "Вивчено",
+    masteredHint: "Вилучено з повторення. Запам'ятай артикль."
+  }
 };
 
 /* =========================
@@ -223,6 +251,11 @@ function showNotice(message) {
   noticeTimer = setTimeout(() => {
     noticeEl.classList.remove('is-visible');
   }, 2400);
+}
+
+function showMasteredNotice(item) {
+  const t = ui[currentLang()] || ui.de;
+  showNotice(`${t.mastered}: ${item.a} ${item.w}. ${t.masteredHint}`);
 }
 
 /* =========================
@@ -508,6 +541,7 @@ function updateAchievements() {
 
 function updateProgressOnAnswer(item, isRight) {
   const wordStats = ensureWordStats(item);
+  const wasMastered = Boolean(wordStats.mastered);
   if (isRight) {
     wordStats.rightTotal++;
     wordStats.rightStreak++;
@@ -526,6 +560,7 @@ function updateProgressOnAnswer(item, isRight) {
 
   if (isRight && wordStats.rightStreak === 5) {
     wordStats.mastered = true;
+    if (!wasMastered) showMasteredNotice(item);
   }
 
   wordStats.lastAttempts.push(isRight);
@@ -698,7 +733,15 @@ function spawnWord(startPos, options = {}) {
 }
 
 function handleChoice(choice) {
-  if (isLock || activeWords.length === 0 || !activeUnit) return;
+  if (isLock && Date.now() - lockSince > 1800) {
+    isLock = false;
+  }
+  if (activeWords.length === 0) return;
+  if (!activeUnit) {
+    rebuildWordPool();
+    return;
+  }
+  if (isLock) return;
 
   langBtn.classList.add('is-dim');
 
@@ -717,6 +760,7 @@ function handleChoice(choice) {
   }
 
   isLock = true;
+  lockSince = Date.now();
   stats.ok++;
   stats.streak++;
   updateScore();

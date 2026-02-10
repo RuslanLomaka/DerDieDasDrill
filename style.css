@@ -551,6 +551,16 @@ main{
     border-color: rgba(255,100,112,0.8);
 }
 
+@media (max-width: 768px){
+    .attempt-bar{
+        margin-bottom: 6px;
+    }
+    .attempt-seg{
+        width: 18px;
+        height: 5px;
+    }
+}
+
 @keyframes attempt-in{
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
