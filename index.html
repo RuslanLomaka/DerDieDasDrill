@@ -81,6 +81,17 @@
       </div>
     </div>
   </div>
+  <div id="masteredModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card modal-mastered" role="document">
+      <div class="modal-body">
+        <div id="masteredTitle" class="mastered-title"></div>
+        <div id="masteredText" class="mastered-text"></div>
+        <div class="modal-footer">
+          <button id="masteredOk" class="pill" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="stage-wrapper">
     <div class="stage" id="stage">
@@ -255,7 +266,17 @@ function showNotice(message) {
 
 function showMasteredNotice(item) {
   const t = ui[currentLang()] || ui.de;
-  showNotice(`${t.mastered}: ${item.a} ${item.w}. ${t.masteredHint}`);
+  if (!masteredModal || !masteredTitle || !masteredText) return;
+  masteredTitle.textContent = t.mastered;
+  masteredText.textContent = `${item.a} ${item.w}. ${t.masteredHint}`;
+  masteredModal.classList.add('is-visible');
+  masteredModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeMasteredModal() {
+  if (!masteredModal) return;
+  masteredModal.classList.remove('is-visible');
+  masteredModal.setAttribute('aria-hidden', 'true');
 }
 
 /* =========================
@@ -274,6 +295,10 @@ const infoModal = document.getElementById('infoModal');
 const infoOk = document.getElementById('infoOk');
 const infoWord = document.getElementById('infoWord');
 const infoPlural = document.getElementById('infoPlural');
+const masteredModal = document.getElementById('masteredModal');
+const masteredTitle = document.getElementById('masteredTitle');
+const masteredText = document.getElementById('masteredText');
+const masteredOk = document.getElementById('masteredOk');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
@@ -708,6 +733,8 @@ function spawnWord(startPos, options = {}) {
 
   const unit = document.createElement('div');
   unit.className = `slot-unit ${startPos}`;
+  unit.dataset.key = getWordKey(data);
+  unit.dataset.article = data.a;
   unit.innerHTML =
     `<div class="slot-content">` +
       `<div class="caption-row">` +
@@ -746,13 +773,13 @@ function handleChoice(choice) {
 
   langBtn.classList.add('is-dim');
 
-  const dataIndex = (currentIndex - 1 + activeWords.length) % activeWords.length;
-  const currentData = activeWords[dataIndex];
-  if (!currentData) {
+  const correctArt = activeUnit.dataset.article;
+  const currentKey = activeUnit.dataset.key;
+  const currentData = currentKey ? WORD_INDEX.get(currentKey) : null;
+  if (!correctArt || !currentData) {
     rebuildWordPool();
     return;
   }
-  const correctArt = currentData.a;
   const isRight = choice === correctArt;
 
   if (!isRight) {
@@ -959,6 +986,10 @@ infoOk.addEventListener('click', closeInfoModal);
 infoModal.addEventListener('click', (e) => {
   if (e.target === infoModal) closeInfoModal();
 });
+masteredModal.addEventListener('click', (e) => {
+  if (e.target === masteredModal) closeMasteredModal();
+});
+masteredOk.addEventListener('click', closeMasteredModal);
 
 setLang(progress.lang || "de", { save: false });
 syncChipsToSelection();
