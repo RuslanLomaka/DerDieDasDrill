@@ -690,8 +690,8 @@ function updateSlotPositions() {
   const slotH = 140;
 
   const yActive = Math.round((stageH - slotH) / 2);
-  const yNext = Math.max(6, yActive - 132);
-  const yPrev = Math.min(stageH - slotH - 4, yActive + 132);
+  const yNext = Math.max(2, yActive - 148);
+  const yPrev = Math.min(stageH - slotH - 2, yActive + 148);
   const yExit = stageH + 40;
 
   document.documentElement.style.setProperty('--y-next',   `${yNext}px`);
