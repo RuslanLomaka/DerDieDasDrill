@@ -117,6 +117,7 @@ let currentIndex = 0;
 let stats = { ok: 0, bad: 0, streak: 0 };
 let isLock = false;
 let lockSince = 0;
+let wrongLockedKey = null;
 let activeUnit = null;
 let prevUnit = null;
 let noticeTimer = null;
@@ -781,15 +782,21 @@ function handleChoice(choice) {
     rebuildWordPool();
     return;
   }
+  if (wrongLockedKey && wrongLockedKey !== currentKey) {
+    wrongLockedKey = null;
+  }
   const isRight = choice === correctArt;
 
   if (!isRight) {
     activeUnit.classList.add('shake-active');
     setTimeout(() => activeUnit.classList.remove('shake-active'), 300);
-    stats.bad++;
-    stats.streak = 0;
-    updateScore();
-    updateProgressOnAnswer(currentData, false);
+    if (wrongLockedKey !== currentKey) {
+      wrongLockedKey = currentKey;
+      stats.bad++;
+      stats.streak = 0;
+      updateScore();
+      updateProgressOnAnswer(currentData, false);
+    }
     return;
   }
 
@@ -797,6 +804,7 @@ function handleChoice(choice) {
   lockSince = Date.now();
   stats.ok++;
   stats.streak++;
+  wrongLockedKey = null;
   updateScore();
   updateProgressOnAnswer(currentData, true);
 
