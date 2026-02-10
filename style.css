@@ -584,10 +584,11 @@ main{
     }
 }
 
-/* show on all slot positions */
-.slot-unit.pos-prev .sub-translation,
+/* show on active + previous */
 .slot-unit.pos-next .sub-translation{ display:none !important; }
 .resolved .sub-translation{ display:none !important; }
+.slot-unit.pos-active.resolved .sub-translation{ display:block !important; opacity: 0.72; }
+.slot-unit.pos-prev.resolved .sub-translation{ display:block !important; opacity: 0.55; }
 .slot-unit.pos-next .attempt-bar{ opacity: 0.4; }
 .slot-unit.pos-prev .attempt-bar{ opacity: 0.65; }
 
