@@ -230,6 +230,7 @@ const ui = {
     multiTitle: "Mehrere Artikel",
     multiLine1: "Dieses Wort hat mehr als einen richtigen Artikel.",
     multiLine2: "Erlaubt: {articles}",
+    reviewTitle: "Review",
     reviewHint: "5 richtige in Folge fuer ein Wort, dann verschwindet es aus der Liste."
   },
   en: {
@@ -244,6 +245,7 @@ const ui = {
     multiTitle: "Multiple articles",
     multiLine1: "This word accepts more than one article.",
     multiLine2: "Accepted: {articles}",
+    reviewTitle: "Review",
     reviewHint: "Get 5 correct in a row on a word to remove it from review."
   },
   uk: {
@@ -258,6 +260,7 @@ const ui = {
     multiTitle: "Кілька артиклів",
     multiLine1: "Це слово має більше одного правильного артикля.",
     multiLine2: "Дозволені: {articles}",
+    reviewTitle: "Повтор",
     reviewHint: "5 правильних підряд для слова — і його буде прибрано зі списку."
   }
 };
@@ -513,7 +516,12 @@ function setRepeatMode(enabled, options = {}) {
 
   if (enabled) {
     const t = ui[currentLang()] || ui.de;
-    showNotice(t.reviewHint);
+    if (multiModal && multiTitle && multiText) {
+      multiTitle.textContent = t.reviewTitle || t.multiTitle;
+      multiText.textContent = t.reviewHint;
+      multiModal.classList.add('is-visible');
+      multiModal.setAttribute('aria-hidden', 'false');
+    }
     if (!preserveSavedLevels) {
       savedLevels = new Set(selectedLevels);
       progress.savedLevels = [...savedLevels];
