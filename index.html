@@ -1006,6 +1006,13 @@ function updateScore() {
   document.getElementById('streak').innerText = stats.streak;
 }
 
+function normalizeSearchText(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const WORD_INDEX = new Map(
@@ -1051,14 +1058,15 @@ function renderSearchResults(items) {
 }
 
 function updateSearchResults() {
-  const q = searchInput.value.trim().toLowerCase();
+  const q = normalizeSearchText(searchInput.value.trim());
   if (!q) {
     clearSearchResults();
     return;
   }
   const matches = [];
   for (const item of rawData) {
-    if (item.w.toLowerCase().startsWith(q)) {
+    const w = normalizeSearchText(String(item.w || ""));
+    if (w.startsWith(q)) {
       matches.push(item);
       if (matches.length >= 8) break;
     }
