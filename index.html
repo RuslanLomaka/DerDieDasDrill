@@ -105,6 +105,17 @@
       </div>
     </div>
   </div>
+  <div id="tipModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card modal-mastered" role="document">
+      <div class="modal-body">
+        <div id="tipTitle" class="mastered-title"></div>
+        <div id="tipText" class="mastered-text"></div>
+        <div class="modal-footer">
+          <button id="tipOk" class="pill" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="stage-wrapper">
     <div class="stage" id="stage">
@@ -139,6 +150,7 @@ const PROGRESS_DEFAULT = {
   savedLevels: ["A1"],
   repeatMode: false,
   lang: "de",
+  tutorialSeen: false,
   stats: {},
   totals: { ok: 0, bad: 0 },
   maxStreak: 0,
@@ -230,8 +242,10 @@ const ui = {
     multiTitle: "Mehrere Artikel",
     multiLine1: "Dieses Wort hat mehr als einen richtigen Artikel.",
     multiLine2: "Erlaubt: {articles}",
-    reviewTitle: "Review",
-    reviewHint: "5 richtige in Folge fuer ein Wort, dann verschwindet es aus der Liste."
+    reviewTitle: "Fehler",
+    reviewHint: "5 richtige in Folge fuer ein Wort, dann verschwindet es aus der Liste.",
+    tipTitle: "Tipp",
+    tipBody: "Levels umschalten, Suche nutzen, frei lernen."
   },
   en: {
     streak: "Streak",
@@ -246,7 +260,9 @@ const ui = {
     multiLine1: "This word accepts more than one article.",
     multiLine2: "Accepted: {articles}",
     reviewTitle: "Review",
-    reviewHint: "Get 5 correct in a row on a word to remove it from review."
+    reviewHint: "Get 5 correct in a row on a word to remove it from review.",
+    tipTitle: "Tip",
+    tipBody: "Toggle levels, use search, and learn freely."
   },
   uk: {
     streak: "Серія",
@@ -261,7 +277,9 @@ const ui = {
     multiLine1: "Це слово має більше одного правильного артикля.",
     multiLine2: "Дозволені: {articles}",
     reviewTitle: "Повтор",
-    reviewHint: "5 правильних підряд для слова — і його буде прибрано зі списку."
+    reviewHint: "5 правильних підряд для слова — і його буде прибрано зі списку.",
+    tipTitle: "Підказка",
+    tipBody: "Перемикай рівні, користуйся пошуком і вчися вільно."
   }
 };
 
@@ -356,6 +374,23 @@ function closeMultiModal() {
   multiModal.setAttribute('aria-hidden', 'true');
 }
 
+function showTipModal() {
+  const t = ui[currentLang()] || ui.de;
+  if (!tipModal || !tipTitle || !tipText) return;
+  tipTitle.textContent = t.tipTitle;
+  tipText.textContent = t.tipBody;
+  tipModal.classList.add('is-visible');
+  tipModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeTipModal() {
+  if (!tipModal) return;
+  tipModal.classList.remove('is-visible');
+  tipModal.setAttribute('aria-hidden', 'true');
+  progress.tutorialSeen = true;
+  saveProgress();
+}
+
 /* =========================
    LEVEL CHIPS (multi-select)
    ========================= */
@@ -380,6 +415,10 @@ const multiModal = document.getElementById('multiModal');
 const multiTitle = document.getElementById('multiTitle');
 const multiText = document.getElementById('multiText');
 const multiOk = document.getElementById('multiOk');
+const tipModal = document.getElementById('tipModal');
+const tipTitle = document.getElementById('tipTitle');
+const tipText = document.getElementById('tipText');
+const tipOk = document.getElementById('tipOk');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
@@ -1115,6 +1154,10 @@ multiModal.addEventListener('click', (e) => {
   if (e.target === multiModal) closeMultiModal();
 });
 multiOk.addEventListener('click', closeMultiModal);
+tipModal.addEventListener('click', (e) => {
+  if (e.target === tipModal) closeTipModal();
+});
+tipOk.addEventListener('click', closeTipModal);
 
 setLang(progress.lang || "de", { save: false });
 syncChipsToSelection();
@@ -1127,6 +1170,7 @@ if (repeatMode) {
   rebuildWordPool();
 }
 ensureInitialPool();
+if (!progress.tutorialSeen) showTipModal();
 updateSlotPositions();
 updateScore();
 </script>
