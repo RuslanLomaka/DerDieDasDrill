@@ -24,7 +24,7 @@
     </h2>
 
     <div class="controls-top">
-      <button id="repeatToggle" class="pill" type="button" aria-pressed="false">
+      <button id="repeatToggle" class="chip review-chip" type="button" aria-pressed="false">
         <span id="repeatLabel">Noch</span>
         <span id="listCount" class="pill-count" aria-label="Word count">0</span>
       </button>
@@ -89,6 +89,17 @@
         <div id="masteredText" class="mastered-text"></div>
         <div class="modal-footer">
           <button id="masteredOk" class="pill" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="multiModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card modal-mastered" role="document">
+      <div class="modal-body">
+        <div id="multiTitle" class="mastered-title"></div>
+        <div id="multiText" class="mastered-text"></div>
+        <div class="modal-footer">
+          <button id="multiOk" class="pill" type="button">OK</button>
         </div>
       </div>
     </div>
@@ -160,10 +171,42 @@ function saveProgress() {
 }
 
 function getWordKey(item) {
-  return `${item.w}|${item.a}`;
+  if (item.id) return item.id;
+  const label = getArticleLabel(item);
+  return `${item.w}|${label}`;
 }
 
 const progress = loadProgress();
+
+function getCorrectArticle(item) {
+  return item.correctArticle || item.a || "";
+}
+
+function getAllowedArticles(item) {
+  return Array.isArray(item.allowedArticles) ? item.allowedArticles : null;
+}
+
+function getArticleLabel(item) {
+  const allowed = getAllowedArticles(item);
+  if (allowed && allowed.length) return allowed.join("/");
+  return getCorrectArticle(item);
+}
+
+function getGermanHint(item) {
+  return item.h?.de ? ` (${item.h.de})` : "";
+}
+
+function getGermanWord(item) {
+  return `${item.w}${getGermanHint(item)}`;
+}
+
+function getTranslationWithHint(item, lang) {
+  if (lang === "de") return "";
+  const base = item.t?.[lang] || "";
+  if (!base) return "";
+  const hint = item.h?.[lang];
+  return hint ? `${base} (${hint})` : base;
+}
 
 function getCurrentActiveData() {
   if (activeWords.length === 0) return null;
@@ -179,31 +222,40 @@ const ui = {
     streak: "Serie",
     score: "Punkte",
     words: "Worter",
-    redo: "Noch",
+    redo: "Fehler",
     plural: "Plural",
     pluralNone: "Kein Plural moeglich",
     mastered: "Gelernt",
-    masteredHint: "Aus dem Wiederholen entfernt. Merke dir den Artikel."
+    masteredHint: "Aus dem Wiederholen entfernt. Merke dir den Artikel.",
+    multiTitle: "Mehrere Artikel",
+    multiLine1: "Dieses Wort hat mehr als einen richtigen Artikel.",
+    multiLine2: "Erlaubt: {articles}"
   },
   en: {
     streak: "Streak",
     score: "Score",
     words: "Words",
-    redo: "Redo",
+    redo: "Review",
     plural: "Plural",
     pluralNone: "No plural form",
     mastered: "Mastered",
-    masteredHint: "Removed from redo. Remember the article."
+    masteredHint: "Removed from redo. Remember the article.",
+    multiTitle: "Multiple articles",
+    multiLine1: "This word accepts more than one article.",
+    multiLine2: "Accepted: {articles}"
   },
   uk: {
     streak: "Серія",
     score: "Рахунок",
     words: "Слів",
-    redo: "знов",
+    redo: "Повтор",
     plural: "Множина",
     pluralNone: "Немає форми множини",
     mastered: "Вивчено",
-    masteredHint: "Вилучено з повторення. Запам'ятай артикль."
+    masteredHint: "Вилучено з повторення. Запам'ятай артикль.",
+    multiTitle: "Кілька артиклів",
+    multiLine1: "Це слово має більше одного правильного артикля.",
+    multiLine2: "Дозволені: {articles}"
   }
 };
 
@@ -270,7 +322,7 @@ function showMasteredNotice(item) {
   const t = ui[currentLang()] || ui.de;
   if (!masteredModal || !masteredTitle || !masteredText) return;
   masteredTitle.textContent = t.mastered;
-  masteredText.textContent = `${item.a} ${item.w}. ${t.masteredHint}`;
+  masteredText.textContent = `${getArticleLabel(item)} ${getGermanWord(item)}. ${t.masteredHint}`;
   masteredModal.classList.add('is-visible');
   masteredModal.setAttribute('aria-hidden', 'false');
 }
@@ -279,6 +331,23 @@ function closeMasteredModal() {
   if (!masteredModal) return;
   masteredModal.classList.remove('is-visible');
   masteredModal.setAttribute('aria-hidden', 'true');
+}
+
+function showMultiArticleModal(item) {
+  const t = ui[currentLang()] || ui.de;
+  if (!multiModal || !multiTitle || !multiText) return;
+  const allowed = getAllowedArticles(item) || [];
+  const articles = allowed.map(a => a.toUpperCase()).join(" / ");
+  multiTitle.textContent = t.multiTitle;
+  multiText.textContent = `${t.multiLine1} ${t.multiLine2.replace('{articles}', articles)}`;
+  multiModal.classList.add('is-visible');
+  multiModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeMultiModal() {
+  if (!multiModal) return;
+  multiModal.classList.remove('is-visible');
+  multiModal.setAttribute('aria-hidden', 'true');
 }
 
 /* =========================
@@ -301,6 +370,10 @@ const masteredModal = document.getElementById('masteredModal');
 const masteredTitle = document.getElementById('masteredTitle');
 const masteredText = document.getElementById('masteredText');
 const masteredOk = document.getElementById('masteredOk');
+const multiModal = document.getElementById('multiModal');
+const multiTitle = document.getElementById('multiTitle');
+const multiText = document.getElementById('multiText');
+const multiOk = document.getElementById('multiOk');
 
 // UPDATED: added C1
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
@@ -350,7 +423,19 @@ function updateWordCount(count) {
   if (listCountEl) {
     const mistakeCount = rawData.filter(item => hasMistake(item) && !isMastered(item)).length;
     listCountEl.textContent = mistakeCount;
+    updateReviewVisual(mistakeCount);
   }
+}
+
+function updateReviewVisual(count) {
+  if (!repeatToggle) return;
+  const t = Math.min(count / 20, 1);
+  const start = { r: 54, g: 198, b: 137 };
+  const end = { r: 255, g: 100, b: 112 };
+  const mix = (a, b) => Math.round(a + (b - a) * t);
+  const color = `rgb(${mix(start.r, end.r)}, ${mix(start.g, end.g)}, ${mix(start.b, end.b)})`;
+  repeatToggle.style.setProperty('--review-color', color);
+  repeatToggle.classList.toggle('review-hot', count >= 20);
 }
 
 function renderWordList() {
@@ -368,9 +453,9 @@ function renderWordList() {
   items.forEach(item => {
     const row = document.createElement('div');
     row.className = 'modal-row';
-    const translation = lang === 'de' ? '' : (item.t?.[lang] || '');
+    const translation = getTranslationWithHint(item, lang);
     row.innerHTML =
-      `<div class="modal-word"><span class="modal-article">${item.a}</span>${item.w}</div>` +
+      `<div class="modal-word"><span class="modal-article">${getArticleLabel(item)}</span>${getGermanWord(item)}</div>` +
       `<div class="modal-meta">` +
         `<span class="modal-level">${item.l}</span>` +
         `<span class="modal-translation">${translation}</span>` +
@@ -393,7 +478,7 @@ function closeWordModal() {
 function openInfoModal(item) {
   if (!infoModal || !infoWord || !infoPlural) return;
   const t = ui[currentLang()] || ui.de;
-  infoWord.textContent = `${item.a} ${item.w}`;
+  infoWord.textContent = `${getArticleLabel(item)} ${getGermanWord(item)}`;
   if (item.p && String(item.p).trim()) {
     infoPlural.textContent = `${t.plural}: ${item.p}`;
     infoPlural.style.display = 'block';
@@ -581,7 +666,7 @@ function updateProgressOnAnswer(item, isRight) {
   }
 
   if (!isRight && wordStats.wrongStreak === 5 && wordStats.lastWarnedStreak !== 5) {
-    showNotice(`Be more patient: ${item.a} ${item.w}`);
+    showNotice(`Be more patient: ${getArticleLabel(item)} ${getGermanWord(item)}`);
     wordStats.lastWarnedStreak = 5;
   }
 
@@ -615,8 +700,7 @@ function updateProgressOnAnswer(item, isRight) {
 
 function getTranslationFor(item, lang) {
   if (!item) return "";
-  if (lang === "de") return "";
-  return item.t?.[lang] || "";
+  return getTranslationWithHint(item, lang);
 }
 
 function refreshActiveTranslation() {
@@ -736,12 +820,11 @@ function spawnWord(startPos, options = {}) {
   const unit = document.createElement('div');
   unit.className = `slot-unit ${startPos}`;
   unit.dataset.key = getWordKey(data);
-  unit.dataset.article = data.a;
   unit.innerHTML =
     `<div class="slot-content">` +
       `<div class="caption-row">` +
-        `<span class="article-reveal">${data.a}</span>` +
-        `<span class="word-span">${data.w}</span>` +
+        `<span class="article-reveal">${getAllowedArticles(data) ? "" : getCorrectArticle(data)}</span>` +
+        `<span class="word-span">${getGermanWord(data)}</span>` +
       `</div>` +
       `<div class="sub-translation"></div>` +
     `</div>`;
@@ -775,17 +858,18 @@ function handleChoice(choice) {
 
   langBtn.classList.add('is-dim');
 
-  const correctArt = activeUnit.dataset.article;
   const currentKey = activeUnit.dataset.key;
   const currentData = currentKey ? WORD_INDEX.get(currentKey) : null;
-  if (!correctArt || !currentData) {
+  if (!currentData) {
     rebuildWordPool();
     return;
   }
   if (wrongLockedKey && wrongLockedKey !== currentKey) {
     wrongLockedKey = null;
   }
-  const isRight = choice === correctArt;
+  const allowed = getAllowedArticles(currentData);
+  const correctArt = getCorrectArticle(currentData);
+  const isRight = allowed ? allowed.includes(choice) : choice === correctArt;
 
   if (!isRight) {
     activeUnit.classList.add('shake-active');
@@ -802,14 +886,24 @@ function handleChoice(choice) {
 
   isLock = true;
   lockSince = Date.now();
+  setTimeout(() => {
+    if (isLock && Date.now() - lockSince > 2000) {
+      isLock = false;
+    }
+  }, 2100);
   stats.ok++;
   stats.streak++;
   wrongLockedKey = null;
   updateScore();
   updateProgressOnAnswer(currentData, true);
+  if (allowed) {
+    showMultiArticleModal(currentData);
+  }
 
   activeUnit.classList.add('resolved');
-  activeUnit.style.color = `var(--${correctArt})`;
+  const articleEl = activeUnit.querySelector('.article-reveal');
+  if (articleEl) articleEl.textContent = choice;
+  activeUnit.style.color = `var(--${choice})`;
   activeUnit.offsetWidth;
   refitWord(activeUnit);
   requestAnimationFrame(() => refitWord(activeUnit));
@@ -866,7 +960,7 @@ const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const WORD_INDEX = new Map(
   rawData
-    .filter(item => item && item.w && item.a)
+    .filter(item => item && item.w && (item.correctArticle || item.allowedArticles || item.a))
     .map(item => [getWordKey(item), item])
 );
 
@@ -890,14 +984,14 @@ function renderSearchResults(items) {
     btn.type = 'button';
     btn.className = 'search-item';
     btn.dataset.key = getWordKey(item);
-    const translation = lang === 'de' ? '' : (item.t?.[lang] || '');
+    const translation = getTranslationWithHint(item, lang);
     const plural = item.p && String(item.p).trim() ? item.p : '';
     const metaParts = [];
     metaParts.push(item.l);
     if (plural) metaParts.push(`Pl: ${plural}`);
     if (translation) metaParts.push(translation);
     btn.innerHTML =
-      `<strong>${item.a}</strong> ${item.w}` +
+      `<strong>${getArticleLabel(item)}</strong> ${getGermanWord(item)}` +
       `<span class="hint">${metaParts.join(' • ')}</span>`;
     searchResults.appendChild(btn);
   });
@@ -999,6 +1093,10 @@ masteredModal.addEventListener('click', (e) => {
   if (e.target === masteredModal) closeMasteredModal();
 });
 masteredOk.addEventListener('click', closeMasteredModal);
+multiModal.addEventListener('click', (e) => {
+  if (e.target === multiModal) closeMultiModal();
+});
+multiOk.addEventListener('click', closeMultiModal);
 
 setLang(progress.lang || "de", { save: false });
 syncChipsToSelection();
