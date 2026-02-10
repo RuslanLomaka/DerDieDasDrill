@@ -24,6 +24,7 @@
     </h2>
 
     <div class="controls-top">
+      <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
       <button id="repeatToggle" class="chip review-chip" type="button" aria-pressed="false">
         <span id="repeatLabel">Noch</span>
         <span id="listCount" class="pill-count" aria-label="Word count">0</span>
@@ -107,7 +108,6 @@
 
   <div class="stage-wrapper">
     <div class="stage" id="stage">
-      <button id="langBtn" class="lang-toggle" type="button" aria-label="Language">🇩🇪</button>
       <div id="reel" class="reel-container"></div>
     </div>
   </div>
@@ -229,7 +229,8 @@ const ui = {
     masteredHint: "Aus dem Wiederholen entfernt. Merke dir den Artikel.",
     multiTitle: "Mehrere Artikel",
     multiLine1: "Dieses Wort hat mehr als einen richtigen Artikel.",
-    multiLine2: "Erlaubt: {articles}"
+    multiLine2: "Erlaubt: {articles}",
+    reviewHint: "5 richtige in Folge fuer ein Wort, dann verschwindet es aus der Liste."
   },
   en: {
     streak: "Streak",
@@ -242,7 +243,8 @@ const ui = {
     masteredHint: "Removed from redo. Remember the article.",
     multiTitle: "Multiple articles",
     multiLine1: "This word accepts more than one article.",
-    multiLine2: "Accepted: {articles}"
+    multiLine2: "Accepted: {articles}",
+    reviewHint: "Get 5 correct in a row on a word to remove it from review."
   },
   uk: {
     streak: "Серія",
@@ -255,7 +257,8 @@ const ui = {
     masteredHint: "Вилучено з повторення. Запам'ятай артикль.",
     multiTitle: "Кілька артиклів",
     multiLine1: "Це слово має більше одного правильного артикля.",
-    multiLine2: "Дозволені: {articles}"
+    multiLine2: "Дозволені: {articles}",
+    reviewHint: "5 правильних підряд для слова — і його буде прибрано зі списку."
   }
 };
 
@@ -433,8 +436,13 @@ function updateReviewVisual(count) {
   const start = { r: 54, g: 198, b: 137 };
   const end = { r: 255, g: 100, b: 112 };
   const mix = (a, b) => Math.round(a + (b - a) * t);
-  const color = `rgb(${mix(start.r, end.r)}, ${mix(start.g, end.g)}, ${mix(start.b, end.b)})`;
+  const r = mix(start.r, end.r);
+  const g = mix(start.g, end.g);
+  const b = mix(start.b, end.b);
+  const color = `rgb(${r}, ${g}, ${b})`;
+  const bg = `rgba(${r}, ${g}, ${b}, 0.22)`;
   repeatToggle.style.setProperty('--review-color', color);
+  repeatToggle.style.setProperty('--review-bg', bg);
   repeatToggle.classList.toggle('review-hot', count >= 20);
 }
 
@@ -504,6 +512,8 @@ function setRepeatMode(enabled, options = {}) {
   levelChips.classList.toggle('is-disabled', enabled);
 
   if (enabled) {
+    const t = ui[currentLang()] || ui.de;
+    showNotice(t.reviewHint);
     if (!preserveSavedLevels) {
       savedLevels = new Set(selectedLevels);
       progress.savedLevels = [...savedLevels];
