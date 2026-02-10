@@ -1015,11 +1015,12 @@ function normalizeSearchText(text) {
 
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
-const WORD_INDEX = new Map(
-  rawData
-    .filter(item => item && item.w && (item.correctArticle || item.allowedArticles || item.a))
-    .map(item => [getWordKey(item), item])
-);
+const VALID_ITEMS = rawData.filter(item => item && item.w && (item.correctArticle || item.allowedArticles || item.a));
+const WORD_INDEX = new Map(VALID_ITEMS.map(item => [getWordKey(item), item]));
+const SEARCH_INDEX = VALID_ITEMS.map(item => ({
+  item,
+  key: normalizeSearchText(String(item.w || ""))
+}));
 
 function clearSearchResults() {
   searchResults.innerHTML = '';
@@ -1057,21 +1058,26 @@ function renderSearchResults(items) {
   document.body.classList.add('search-open');
 }
 
+let searchTick = null;
+let searchPoll = null;
+let lastSearchValue = "";
 function updateSearchResults() {
-  const q = normalizeSearchText(searchInput.value.trim());
-  if (!q) {
-    clearSearchResults();
-    return;
-  }
-  const matches = [];
-  for (const item of rawData) {
-    const w = normalizeSearchText(String(item.w || ""));
-    if (w.startsWith(q)) {
-      matches.push(item);
-      if (matches.length >= 8) break;
+  if (searchTick) clearTimeout(searchTick);
+  searchTick = setTimeout(() => {
+    const q = normalizeSearchText(searchInput.value.trim());
+    if (!q) {
+      clearSearchResults();
+      return;
     }
-  }
-  renderSearchResults(matches);
+    const matches = [];
+    for (const entry of SEARCH_INDEX) {
+      if (entry.key.includes(q)) {
+        matches.push(entry.item);
+        if (matches.length >= 8) break;
+      }
+    }
+    renderSearchResults(matches);
+  }, 0);
 }
 
 function jumpToWord(item) {
@@ -1101,6 +1107,27 @@ function jumpToWord(item) {
 
 searchInput.addEventListener('input', updateSearchResults);
 searchInput.addEventListener('focus', updateSearchResults);
+searchInput.addEventListener('keyup', updateSearchResults);
+searchInput.addEventListener('compositionend', updateSearchResults);
+searchInput.addEventListener('input', () => {
+  lastSearchValue = searchInput.value;
+});
+searchInput.addEventListener('focus', () => {
+  if (searchPoll) clearInterval(searchPoll);
+  lastSearchValue = searchInput.value;
+  searchPoll = setInterval(() => {
+    if (searchInput.value !== lastSearchValue) {
+      lastSearchValue = searchInput.value;
+      updateSearchResults();
+    }
+  }, 120);
+});
+searchInput.addEventListener('blur', () => {
+  if (searchPoll) {
+    clearInterval(searchPoll);
+    searchPoll = null;
+  }
+});
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     const first = searchResults.querySelector('.search-item');

@@ -128,7 +128,9 @@ header{
 
 /* --- LEVEL CHIPS --- */
 .level-chips{ display:inline-flex; gap:6px; align-items:center; flex-wrap:nowrap; }
-.level-chips.is-disabled{ opacity: 0.55; pointer-events: none; }
+.level-chips.is-disabled{ opacity: 0.55; }
+.level-chips.is-disabled .chip{ pointer-events: none; }
+.level-chips.is-disabled .lang-toggle{ pointer-events: auto; opacity: 1; }
 .pill-count{
     color: #ff5f5f;
     font-size: 12px;
@@ -687,10 +689,6 @@ main{
         width:32px; height:32px;
         border-radius:10px;
         font-size:0;
-    }
-    body.search-open .lang-toggle{
-        opacity: 0;
-        pointer-events: none;
     }
 
     .controls-top{
