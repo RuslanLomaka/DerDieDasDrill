@@ -150,7 +150,6 @@ const PROGRESS_DEFAULT = {
   savedLevels: ["A1"],
   repeatMode: false,
   lang: "de",
-  tutorialSeen: false,
   stats: {},
   totals: { ok: 0, bad: 0 },
   maxStreak: 0,
@@ -244,8 +243,8 @@ const ui = {
     multiLine2: "Erlaubt: {articles}",
     reviewTitle: "Fehler",
     reviewHint: "5 richtige in Folge fuer ein Wort, dann verschwindet es aus der Liste.",
-    tipTitle: "Tipp",
-    tipBody: "Levels umschalten, Suche nutzen, frei lernen."
+    exploreTitle: "Lernen",
+    exploreHint: "Levels umschalten, Suche nutzen, frei lernen."
   },
   en: {
     streak: "Streak",
@@ -261,8 +260,8 @@ const ui = {
     multiLine2: "Accepted: {articles}",
     reviewTitle: "Review",
     reviewHint: "Get 5 correct in a row on a word to remove it from review.",
-    tipTitle: "Tip",
-    tipBody: "Toggle levels, use search, and learn freely."
+    exploreTitle: "Explore",
+    exploreHint: "Toggle levels, use search, and learn freely."
   },
   uk: {
     streak: "Серія",
@@ -278,8 +277,8 @@ const ui = {
     multiLine2: "Дозволені: {articles}",
     reviewTitle: "Повтор",
     reviewHint: "5 правильних підряд для слова — і його буде прибрано зі списку.",
-    tipTitle: "Підказка",
-    tipBody: "Перемикай рівні, користуйся пошуком і вчися вільно."
+    exploreTitle: "Вивчення",
+    exploreHint: "Перемикай рівні, користуйся пошуком і вчися вільно."
   }
 };
 
@@ -374,11 +373,10 @@ function closeMultiModal() {
   multiModal.setAttribute('aria-hidden', 'true');
 }
 
-function showTipModal() {
-  const t = ui[currentLang()] || ui.de;
+function showModeModal(title, text) {
   if (!tipModal || !tipTitle || !tipText) return;
-  tipTitle.textContent = t.tipTitle;
-  tipText.textContent = t.tipBody;
+  tipTitle.textContent = title;
+  tipText.textContent = text;
   tipModal.classList.add('is-visible');
   tipModal.setAttribute('aria-hidden', 'false');
 }
@@ -387,8 +385,6 @@ function closeTipModal() {
   if (!tipModal) return;
   tipModal.classList.remove('is-visible');
   tipModal.setAttribute('aria-hidden', 'true');
-  progress.tutorialSeen = true;
-  saveProgress();
 }
 
 /* =========================
@@ -555,12 +551,7 @@ function setRepeatMode(enabled, options = {}) {
 
   if (enabled) {
     const t = ui[currentLang()] || ui.de;
-    if (multiModal && multiTitle && multiText) {
-      multiTitle.textContent = t.reviewTitle || t.multiTitle;
-      multiText.textContent = t.reviewHint;
-      multiModal.classList.add('is-visible');
-      multiModal.setAttribute('aria-hidden', 'false');
-    }
+    showModeModal(t.reviewTitle, t.reviewHint);
     if (!preserveSavedLevels) {
       savedLevels = new Set(selectedLevels);
       progress.savedLevels = [...savedLevels];
@@ -578,6 +569,8 @@ function setRepeatMode(enabled, options = {}) {
     progress.savedLevels = [...savedLevels];
     syncChipsToSelection();
     rebuildWordPool();
+    const t = ui[currentLang()] || ui.de;
+    showModeModal(t.exploreTitle, t.exploreHint);
   }
 
   if (!skipSave) saveProgress();
@@ -1170,7 +1163,6 @@ if (repeatMode) {
   rebuildWordPool();
 }
 ensureInitialPool();
-if (!progress.tutorialSeen) showTipModal();
 updateSlotPositions();
 updateScore();
 </script>
