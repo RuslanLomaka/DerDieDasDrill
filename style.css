@@ -533,7 +533,6 @@ main{
     margin-bottom: 10px;
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 820ms ease, transform 820ms ease;
 }
 .attempt-seg{
     width: 22px;
@@ -561,29 +560,12 @@ main{
     }
 }
 
-@keyframes attempt-in{
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.attempt-bar.is-enter{
-    animation: attempt-in 320ms ease;
-}
-
-/* show only on active, hide on prev/next/resolved */
+/* show on all slot positions */
 .slot-unit.pos-prev .sub-translation,
 .slot-unit.pos-next .sub-translation{ display:none !important; }
 .resolved .sub-translation{ display:none !important; }
-.slot-unit.pos-next .attempt-bar{
-    opacity: 0;
-    transform: translateY(-8px);
-}
-.slot-unit.pos-prev .attempt-bar,
-.slot-unit.pos-exit .attempt-bar,
-.resolved .attempt-bar{
-    opacity: 0;
-    transform: translateY(8px);
-    transition-delay: 140ms;
-}
+.slot-unit.pos-next .attempt-bar{ opacity: 0.4; }
+.slot-unit.pos-prev .attempt-bar{ opacity: 0.65; }
 
 /* readability tweaks */
 .slot-unit.pos-active{ text-shadow: 0 10px 24px rgba(0,0,0,0.65); }

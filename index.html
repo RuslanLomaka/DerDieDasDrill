@@ -515,7 +515,7 @@ function renderAttemptBar(unit, item) {
     : [];
 
   const bar = document.createElement('div');
-  bar.className = 'attempt-bar is-enter';
+  bar.className = 'attempt-bar';
 
   const offset = 5 - history.length;
   for (let i = 0; i < 5; i++) {
@@ -720,9 +720,10 @@ function spawnWord(startPos, options = {}) {
   reel.appendChild(unit);
   refitWord(unit);
 
+  if (repeatMode) renderAttemptBar(unit, data);
+
   if (startPos === "pos-active") {
     activeUnit = unit;
-    if (repeatMode) renderAttemptBar(unit, data);
     refreshActiveTranslation();
   } else {
     const sub = unit.querySelector('.sub-translation');
